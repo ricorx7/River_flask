@@ -1,0 +1,58 @@
+{% extends "base.html" %} 
+
+{% block title %} 
+    Rowe Technologies, Inc. Download Datalogger
+{% endblock %} 
+
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important {
+            color: #336699;
+        }
+    </style>
+
+    {% include 'socketio.j2' with context %}
+
+{% endblock %} 
+
+{% block content %}
+
+<form method="POST" action='/scan_serial'>
+    <div class="form-group">
+        <label for="exampleFormControlSelect1">COMM Port</label>
+        <select class="form-control" name="comm_port_selected" id="comm_port_select">
+            {% if selected_comm_port != null %}
+                <option selected="selected">{{ selected_comm_port }}</option>
+            {% endif %}
+
+            {% for comm in comm_ports %}
+                <option>{{ comm }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="SCAN" />
+
+        <label for="exampleFormControlSelect1">Baud Rate</label>
+        <select class="form-control" name="baud_selected" id="baud_selected">
+            {% if selected_comm_port != null %}
+                <option selected="selected">{{ selected_baud }}</option>
+            {% endif %}
+
+            {% for baud in bauds %}
+                <option>{{ baud }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+<form id="connect_serial" method="POST" action='#'>
+    <input type="submit" value="Connect"><br>
+</form>
+<form id="disconnect_serial" method="POST" action='#'>
+    <input type="submit" value="Disconnect"><br>
+</form>
+
+<h2>Log:</h2>
+<div id="log"></div>
+
+
+{% endblock %}

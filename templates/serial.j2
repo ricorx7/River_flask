@@ -1,0 +1,53 @@
+
+<div class="row">
+    <div class="col"
+        <h1>Serial Port</h1>
+        <form role="form" method="post" onsubmit="return false;">
+            {{ form.hidden_tag() }}
+            {{ form.csrf_token }}
+            <p>
+                {{ form.comm_port.label }}<br>
+                {{ form.comm_port() }}
+            <input type="submit" id="btnScan" value="scan" class="btn btn-info btn-sm"/>
+            </p>
+            <p>
+                {{ form.baud_rate.label }}<br>
+                {{ form.baud_rate() }}
+            </p>
+            <p><input type="submit" id="btnConnect" value="Connect" class="btn btn-warning btn-sm" /> <input type="submit" id="btnDisconnect" value="Disconnect" class="btn btn-warning btn-sm"/> </p>
+        </form>
+    </div>
+    <div class="col">
+        <div class="jumbotron">
+            <h1 class="display-4">Download</h1>
+            <p class="lead">Download the data from the datalogger.  There are 2 options.  Download using this software or remove the SD card and read the entire disk image.</p>
+            <hr class="my-4">
+            <p>Select the folder path to write the data.</p>
+            <input type="submit" id="btnBrowseFolder" value="Select Folder" />
+            <p><label>Folder Path:  </label><label id="folderPath"></label></p>
+            <p class="lead">
+                <Button type="submit" id="btnDownload" class="btn btn-primary btn-lg">Download</Button>
+            </p>
+
+            <p><label>Total Blocks: </label><label id="totalBlocks"></label></p>
+            <p><label>Blocks Read:  </label><label id="blocksRead"></label></p>
+            <p><label>Blocks Left:  </label><label id="blocksLeft"></label></p>
+            <p><label>Download Progress:  </label><label id="Download Progress"></label></p>
+            <div id="progressbar"></div>
+            <div class="progress">
+                <div class="progress-bar" id="dl-progress" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <h2>Status: </h2>
+        <div id="dl_status"></div>
+    </div>
+    <div class="col">
+        <h2>Log: </h2>
+        <div id="log"></div>
+    </div>
+</div>

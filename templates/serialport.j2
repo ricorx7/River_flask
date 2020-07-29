@@ -1,0 +1,18 @@
+<h1>Serial Port</h1>
+<form role="form" method="post" onsubmit="return false;">
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <p>
+        {{ form.comm_port.label }}<br>
+        {{ form.comm_port() }}
+    <input type="submit" id="btnScan" value="scan" class="btn btn-info btn-sm"/>
+    </p>
+    <p>
+        {{ form.baud_rate.label }}<br>
+        {{ form.baud_rate() }}
+    </p>
+    <p><input type="submit" id="btnConnect" value="Connect" class="btn btn-warning btn-sm" /> <input type="submit" id="btnDisconnect" value="Disconnect" class="btn btn-warning btn-sm"/> </p>
+    <div id="successSerialAlert" class="alert alert-success" role="alert" style="display:none;"></div>
+    <div id="errorSerialAlert" class="alert alert-danger" role="alert" style="display:none;"></div>
+</form>
+

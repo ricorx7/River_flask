@@ -1,0 +1,104 @@
+{% extends "base.html" %} 
+
+{% block title %} 
+    {{adcp.SerialNumber}} 
+{% endblock %} 
+
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .important {
+            color: #336699;
+        }
+    </style>
+
+{% endblock %} 
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-2">
+            <img src="{{ url_for('static', filename='/img/logo_small.png') }}" class="rounded float-left" alt="RTI LOGO">
+        </div>
+        <div class="col">
+            <h1>ADCP/DVL Test Certificate</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <strong>Serial Number:</strong> {{ adcp.SerialNumber }}
+        </div>
+        <div class="col"></div>
+        <div class="col-md-2">
+            <strong>Order Number:</strong> {{ adcp.OrderNumber }}
+        </div>
+        <div class="col"></div>
+        <div class="col-md-2">
+            <strong>Customer: </strong><p class="important">{{ adcp.Customer }} </p>
+        </div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-5">
+            {% include 'cert_left.j2' with context %}
+        </div>
+        <div class="col">
+
+                {% include 'compasscal.j2' with context %}
+
+                {% include 'tanktest_noise.j2' with context %}
+
+                {% include 'laketest_snr.j2' with context %}
+
+        </div>
+    </div>
+
+    {% include 'dmg.j2' with context %}
+
+    <div class="row">
+        <div class="col-md-2">
+            Tech Signature:
+        </div>
+        <div class="col">
+            <div class="input-group mb-4">
+                <input type="text" class="form-control" aria-describedby="basic-addon1">
+            </div>
+        </div>
+        <div class="col-md-1">
+            Date:
+        </div>
+        <div class="col-md-3">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" aria-describedby="basic-addon1">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-2">
+            QA/QC Signature:
+        </div>
+        <div class="col">
+            <div class="input-group mb-4">
+                <input type="text" class="form-control" aria-describedby="basic-addon1">
+            </div>
+        </div>
+        <div class="col-md-1">
+            Date:
+        </div>
+        <div class="col-md-3">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" aria-describedby="basic-addon1">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <strong>Rowe Technologies, Inc.</strong> | 12655 Danielson Ct., Suite 306, Poway, California, USA
+    </div>
+
+    <div class="row">
+        http://www.rowetechinc.com | service@rowetechinc.com | +1 858 842 3020
+    </div>
+
+{% endblock %}
+
