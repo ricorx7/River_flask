@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import json
 from rti_python.Comm.adcp_serial_port import AdcpSerialPort
-import rti_python.Datalogger.DataloggerHardware as data_logger
+import rti_python.Comm.adcp_serial_port as serial_port
 from vm import DataloggrGui
 import threading
 import logging
@@ -21,6 +21,12 @@ class AppManager:
         self.serial_port = None
         self.serial_thread = None
         self.serial_thread_alive = False
+
+        self.app_state = {
+            "serial_connected": False,
+            "selected_serial_port": "",
+            "selected_baud": 115200
+        }
 
         # GUI object to keep track of state
         self.gui = DataloggrGui.DataloggrGui()
@@ -75,6 +81,12 @@ class AppManager:
             # Pass the status to the websocket
             #self.socketio.emit('gui_status', json_gui, namespace='/test')
 
+    def get_serial_ports(self):
+        return serial_port.get_serial_ports()
+
+    def get_baud_rates(self):
+        return serial_port.get_baud_rates()
+
     def connect_serial(self, comm_port: str, baud: int):
         """
         Connect the serial port.
@@ -97,6 +109,11 @@ class AppManager:
             self.serial_thread_alive = True
             self.serial_thread = threading.Thread(name="Serial Terminal Thread", target=self.serial_thread_worker)
             self.serial_thread.start()
+
+            # Set the app state
+            self.app_state["serial_connected"] = True
+            self.app_state["selected_serial_port"] = comm_port
+            self.app_state["selected_baud"] = baud
 
             return "Connected"
 

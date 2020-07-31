@@ -96,8 +96,9 @@ def display_plot():
 
 @app.route('/term')
 def display_terminal():
-    form = SerialPortForm()
-    return render_template('terminal.j2', form=form)
+    bauds = app_mgr.get_baud_rates()
+    ports = app_mgr.get_serial_ports()
+    return render_template('terminal.j2', bauds=bauds, ports=ports)
 
 @app.route('/serial_scan', methods=['POST'])
 def serial_scan():
@@ -140,30 +141,26 @@ def browse_folder():
 
 @app.route('/serial_connect', methods=['POST'])
 def serial_connect():
-    form = SerialPortForm()
     print("CALL Serial Connect")
-    if form.validate_on_submit():
-        print("SERIAL Connect")
+    print(request.form)
 
-        # Try to connect to the serial port
-        #connect_status = logger_hardware.connect_serial(form.comm_port.data, int(form.baud_rate.data))
+    # Verify command is given
+    if "selected_port" and "selected_baud" in request.form:
+        # Get the command
+        selected_port = request.form["selected_port"]
+        selected_baud = request.form["selected_baud"]
+        print(selected_port)
+        print(selected_baud)
 
-        # Update the GUI
-        #gui.set_serial_connect()
+        # Send the command to the serial port
+        result = app_mgr.connect_serial(selected_port, int(selected_baud))
 
-        # Connect serial port
-        connect_status = app_mgr.connect_serial(form.comm_port.data, int(form.baud_rate.data))
+        # Return good status
+        return jsonify({'status': result})
 
-        flash("Serial Port Connected", "success")
+    # Return error, missing command
+    return jsonify({'error': "Missing parameters to connect"})
 
-        return jsonify({
-                        'comm_port': '{}'.format(form.comm_port.data),
-                        'baud_rate': '{}'.format(form.baud_rate.data),
-                        'status': connect_status
-                        })
-    
-    # If not valid, return errors
-    return jsonify(data=form.errors)
 
 
 @app.route('/serial_disconnect', methods=['POST'])

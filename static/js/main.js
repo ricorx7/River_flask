@@ -71,14 +71,17 @@ $(document).ready(function() {
         console.log("CONNECT BUTTON CLICKED");
 
         // grab values
-        comm_port = $('#comm_port').val();
-        baud_rate = $("#baud_rate").val();
+        comm_port = $('#selectComm').val();
+        baud_rate = $("#selectBaud").val();
         console.log(comm_port, baud_rate);
 
         $.ajax({
             type: "POST",
             url: "/serial_connect",
-            data: $('form').serialize(), // serializes the form's elements.
+            data: {
+                    selected_port : comm_port,
+                    selected_baud : baud_rate
+                    },
             success: function (response) {
                 console.log(response)  // display the returned data in the console.
 
@@ -94,15 +97,9 @@ $(document).ready(function() {
             }
         });
 
-        // Inject our CSRF token into our AJAX request.
-        // REALLY JUST REQUIRED FOR WEB USE
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
-                }
-            }
-        })
+        // Prevent it being called twice
+        event.preventDefault();
+
     });
 
     /**
@@ -232,6 +229,9 @@ $(document).ready(function() {
                 }
                 else {
                     $('#successCmdAlert').text(response.status).show();
+                    $("#successCmdAlert").fadeTo(500, 0).slideUp(500, function(){
+                        $("#successCmdAlert").slideUp(500);
+                    });
                     $('#errorCmdAlert').hide();
 
                     // Clear the text box
