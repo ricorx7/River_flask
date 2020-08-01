@@ -23,9 +23,14 @@ class AppManager:
         self.serial_thread_alive = False
 
         self.app_state = {
-            "serial_connected": False,
-            "selected_serial_port": "",
-            "selected_baud": 115200
+            "is_serial_connected": False,                       # Is the serial port connected
+            "serial_status": [],                                # Status of the serial connection
+            "selected_serial_port": "",                         # Comm port selected
+            "selected_baud": "115200",                          # Baud rate selected
+            "is_serial_error":  False,                          # Any serial errors.
+            "serial_error_status": [],                          # List of error messages
+            "baud_list": self.get_baud_rates(),                 # List of all available Baud rates
+            "serial_port_list": self.get_serial_ports()         # List of all available Serial Ports
         }
 
         # GUI object to keep track of state
@@ -92,18 +97,31 @@ class AppManager:
         Connect the serial port.
         Start the serial port read thread.
         """
+        # Set App State
+        self.app_state["selected_serial_port"] = comm_port
+        self.app_state["selected_baud"] = str(baud)
+
         if not self.serial_port:
             try:
                 self.serial_port = AdcpSerialPort(comm_port, baud)
             except ValueError as ve:
                 logging.error("Error opening serial port. " + str(ve))
-                return "Error opening serial port. " + str(ve)
+                self.app_state["is_serial_connected"] = False
+                self.app_state["is_serial_error"] = True
+                self.app_state["serial_error_status"].append("Error opening serial port. " + str(ve))
+                return self.app_state
             except serial.SerialException as se:
                 logging.error("Error opening serial port. " + str(se))
-                return "Error opening serial port. " + str(se)
+                self.app_state["is_serial_connected"] = False
+                self.app_state["is_serial_error"] = True
+                self.app_state["serial_error_status"].append("Error opening serial port. " + str(se))
+                return self.app_state
             except Exception as e:
                 logging.error("Error opening serial port. " + str(e))
-                return "Error opening serial port. " + str(e)
+                self.app_state["is_serial_connected"] = False
+                self.app_state["is_serial_error"] = True
+                self.app_state["serial_error_status"].append("Error opening serial port. " + str(e))
+                return self.app_state
 
             # Start the read thread
             self.serial_thread_alive = True
@@ -111,11 +129,12 @@ class AppManager:
             self.serial_thread.start()
 
             # Set the app state
-            self.app_state["serial_connected"] = True
-            self.app_state["selected_serial_port"] = comm_port
-            self.app_state["selected_baud"] = baud
+            self.app_state["is_serial_connected"] = True
+            self.app_state["is_serial_error"] = False
+            self.app_state["serial_status"].clear()
+            self.app_state["serial_status"].append("Connected")
 
-            return "Connected"
+            return self.app_state
 
     def disconnect_serial(self):
         """
@@ -126,6 +145,15 @@ class AppManager:
         if self.serial_port:
             self.serial_port.disconnect()
             self.serial_port = None
+
+            # Set the app state
+            self.app_state["is_serial_connected"] = False
+            self.app_state["is_serial_error"] = False
+            self.app_state["serial_status"].clear()
+            self.app_state["serial_error_status"].clear()
+            self.app_state["serial_status"].append("Disconnected")
+
+        return self.app_state
 
     def send_serial_break(self):
         if self.serial_port:

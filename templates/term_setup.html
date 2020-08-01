@@ -2,9 +2,9 @@
 <form>
     <p>
         <label for="selectComm">Comm Port</label>
-        <select id="selectComm" name="selectComm" >
+        <select id="selectComm" name="selectComm">
             {% for port in ports %}
-                <option value="{{ port }}">{{ port }}</option>
+                <option value="{{ port }}" {{ 'selected' if selected_serial_port==port }}>{{ port }}</option>
             {% endfor %}
         </select>
     <input type="submit" id="btnScan" value="scan" class="btn btn-info btn-sm"/>
@@ -13,11 +13,11 @@
         <label for="selectBaud">Baud Rate</label>
         <select id="selectBaud" name="selectBaud">
             {% for baud in bauds %}
-                <option value="{{ baud }}">{{ baud }}</option>
+                <option value="{{ baud }}" {{ 'selected' if selected_baud==baud }}>{{ baud }}</option>
             {% endfor %}
         </select>
     </p>
-    <p><input type="submit" id="btnConnect" value="Connect" class="btn btn-warning btn-sm" /> <input type="submit" id="btnDisconnect" value="Disconnect" class="btn btn-warning btn-sm"/> </p>
+    <p><input type="submit" id="btnConnect" value="Connect" class="btn btn-warning btn-sm" {% if is_serial_connected %}disabled{%endif%} /> <input type="submit" id="btnDisconnect" value="Disconnect" class="btn btn-warning btn-sm"/> </p>
     <div id="successSerialAlert" class="alert alert-success" role="alert" style="display:none;"></div>
     <div id="errorSerialAlert" class="alert alert-danger alert-dismissible fade show" role="alert" style="display:none;"></div>
 </form>

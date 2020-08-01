@@ -85,15 +85,22 @@ $(document).ready(function() {
             success: function (response) {
                 console.log(response)  // display the returned data in the console.
 
-                if(response.error) {
-                    $('#errorSerialAlert').text(response.error).show();
-                    $('#successSerialAlert').hide();
-                }
-                else {
-                    $('#successSerialAlert').text(response.status).show();
-                    $('#errorSerialAlert').hide();
+                // Check for any errors when trying to connect
+                if(response.is_serial_error)
+                {
+                    $('#errorSerialAlert').text(response.serial_error_status[0]).show();
+                    $('#successSerialAlert').hide()
                 }
 
+                // Check if the serial port was successful at connecting
+                if(response.is_serial_connected)
+                {
+                    $('#successSerialAlert').text(response.serial_status[0]).show();
+                    $('#errorSerialAlert').hide();
+
+                    // Disable the connect button when connected
+                    $('#btnConnect').attr("disabled", true);
+                }
             }
         });
 
@@ -110,39 +117,31 @@ $(document).ready(function() {
     $('#btnDisconnect').click(function() {
         console.log("DISCONNECT BUTTON CLICKED");
 
-        // grab values
-        comm_port = $('#comm_port').val();
-        baud_rate = $("#baud_rate").val();
-        console.log(comm_port, baud_rate);
-
         $.ajax({
             type: "POST",
             url: "/serial_disconnect",
-            data: $('form').serialize(), // serializes the form's elements.
+            data: { },
             success: function (response) {
                 console.log(response)  // display the returned data in the console.
 
-                if(response.error) {
-                    $('#errorSerialAlert').text(response.error).show();
-                    $('#successSerialAlert').hide();
+                if(response.is_serial_error)
+                {
+                    $('#errorSerialAlert').text(response.serial_error_status[0]).show();
+                    $('#successSerialAlert').hide()
                 }
-                else {
-                    $('#successSerialAlert').text(response.status).show();
+                else
+                {
+                    $('#successSerialAlert').text(response.serial_status[0]).show();
                     $('#errorSerialAlert').hide();
                 }
 
+                // Enable the connect button when connected
+                $('#btnConnect').attr("disabled", false);
             }
         });
 
-        // Inject our CSRF token into our AJAX request.
-        // REALLY JUST REQUIRED FOR WEB USE
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
-                }
-            }
-        })
+        // Prevent it being called twice
+        event.preventDefault();
     });
 
 

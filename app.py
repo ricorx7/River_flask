@@ -94,11 +94,16 @@ def display_plot():
     bar = app_mgr.get_plot()
     return render_template('plot_full.j2', plot=bar)
 
+
 @app.route('/term')
 def display_terminal():
-    bauds = app_mgr.get_baud_rates()
-    ports = app_mgr.get_serial_ports()
-    return render_template('terminal.j2', bauds=bauds, ports=ports)
+    return render_template('terminal.j2',
+                           bauds=app_mgr.app_state['baud_list'],
+                           ports=app_mgr.app_state['serial_port_list'],
+                           is_serial_connected=app_mgr.app_state['is_serial_connected'],
+                           selected_baud=app_mgr.app_state['selected_baud'],
+                           selected_serial_port=app_mgr.app_state['selected_serial_port'])
+
 
 @app.route('/serial_scan', methods=['POST'])
 def serial_scan():
@@ -156,35 +161,22 @@ def serial_connect():
         result = app_mgr.connect_serial(selected_port, int(selected_baud))
 
         # Return good status
-        return jsonify({'status': result})
+        return jsonify(result)
 
     # Return error, missing command
     return jsonify({'error': "Missing parameters to connect"})
 
 
-
 @app.route('/serial_disconnect', methods=['POST'])
 def serial_disconnect():
-    form = SerialPortForm()
     print("CALL Serial Disconnect")
-    if form.validate_on_submit():
-        print("SERIAL Disconnect")
+    print(request.form)
 
-        # Try to connect to the serial port
-        connect_status = "Disconnect"
-        logger_hardware.disconnect_serial()
+    # Disconnect to the serial port
+    result = app_mgr.disconnect_serial()
 
-        # Update the GUI
-        gui.set_serial_disconnect()
-
-        return jsonify({
-                        'comm_port': '{}'.format(form.comm_port.data),
-                        'baud_rate': '{}'.format(form.baud_rate.data),
-                        'status': '{}'.format(connect_status)
-                        })
-    
-    # If not valid, return errors
-    return jsonify(data=form.errors)
+    # Return the state of the app
+    return jsonify(result)
 
 
 @app.route('/download', methods=['POST'])
