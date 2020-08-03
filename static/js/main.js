@@ -40,12 +40,23 @@ $(document).ready(function()
         //    cb();
     });
 
-    // Update the serial communication console to see the latest serial
-    // communication
+    /**
+     * Update the serial communication console to see the latest serial
+     * communication
+     */
     socket.on('serial_comm', function(msg, cb) {
         console.log("serial_comm");
         // Update the console
         $("textarea#txtSerialOutput").html(msg.data);
+    });
+
+    /**
+     * Receiver the latest Ensemble information
+     */
+    socket.on('adcp_ens', function(msg, cb) {
+        // Update the ensemble number
+        $("#adcpEnsNumLabel").text(msg.adcp_ens_num);
+        $("#adcpEnsNumStatusLabel").text(msg.adcp_ens_num);
     });
 
 });

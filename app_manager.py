@@ -20,6 +20,7 @@ class AppManager:
 
         # ADCP Codec to decode the ADCP data
         self.adcp_codec = AdcpCodec()
+        self.adcp_codec.ensemble_event += self.process_ensemble
 
         # Serial Port
         self.serial_port = None
@@ -175,6 +176,18 @@ class AppManager:
     def send_serial_cmd(self, cmd):
         if self.serial_port:
             self.serial_port.send_cmd(cmd=cmd)
+
+    def process_ensemble(self, sender, ens):
+        if ens.IsEnsembleData:
+            print(str(ens.EnsembleData.EnsembleNumber))
+            self.app_state["adcp_ens_num"] = ens.EnsembleData.EnsembleNumber
+
+            # Pass the ASCII serial data to the websocket
+            self.socketio.emit('adcp_ens',
+                               {
+                                   'adcp_ens_num': self.app_state["adcp_ens_num"]
+                               },
+                               namespace='/rti')
 
     def serial_thread_worker(self):
         """
