@@ -1,0 +1,18 @@
+<div class="row bg-light text-dark">
+    <div class="col-sm-2">
+        <span class="badge badge-secondary ensNumBadge">ENS: </span>
+        <label id="adcpEnsNumLabel">{{ state.adcp_ens_num }}</label>
+    </div>
+    <div class="col-sm-2">
+        <span class="badge badge-secondary ensNumBadge">SN: </span>
+        <label id="adcpSerialNumLabel">{{ state.adcp_break.serial_number }}</label>
+    </div>
+    <div class="col-sm-4">
+        <span class="badge badge-secondary ensNumBadge">FW: </span>
+        <label id="adcpFirmwareLabel">{{ state.adcp_break.firmware_str }}</label>
+    </div>
+    <div class="col-sm-4">
+        <span class="badge badge-secondary ensNumBadge">Mode: </span>
+        <label id="adcpModeLabel">{{ state.adcp_break.mode }}</label>
+    </div>
+</div>

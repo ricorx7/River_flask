@@ -32,6 +32,8 @@
         {% endwith %}
 
         <div id="content">{% block content %}{% endblock %}</div>
+
+        {% include 'status.html' %}
     </div>
     <div id="footer">
         {% block footer %} &copy; Copyright 2020 by <a href="http://www.rowetechinc.com/">Rowe Technologies, Inc.</a>. {% endblock %}
@@ -44,6 +46,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
     <script src={{ url_for('static', filename='js/main.js') }}></script>
+    <script src={{ url_for('static', filename='js/serial.js') }}></script>
 
 
 

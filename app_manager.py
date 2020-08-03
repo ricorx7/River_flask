@@ -5,7 +5,7 @@ import numpy as np
 import json
 from rti_python.Comm.adcp_serial_port import AdcpSerialPort
 import rti_python.Comm.adcp_serial_port as serial_port
-from vm import DataloggrGui
+from rti_python.Codecs.AdcpCodec import AdcpCodec
 import threading
 import logging
 import serial
@@ -18,6 +18,10 @@ class AppManager:
         self.plot = self.create_plot()
         self.socketio = socketio
 
+        # ADCP Codec to decode the ADCP data
+        self.adcp_codec = AdcpCodec()
+
+        # Serial Port
         self.serial_port = None
         self.serial_thread = None
         self.serial_thread_alive = False
@@ -30,11 +34,14 @@ class AppManager:
             "is_serial_error":  False,                          # Any serial errors.
             "serial_error_status": [],                          # List of error messages
             "baud_list": self.get_baud_rates(),                 # List of all available Baud rates
-            "serial_port_list": self.get_serial_ports()         # List of all available Serial Ports
+            "serial_port_list": self.get_serial_ports(),        # List of all available Serial Ports
+            "serial_raw_ascii": "",                             # Raw ascii from the serial port
+            "adcp_break": {},                                   # Results of a BREAK statement
+            "adcp_ens_num": 0,                                  # Latest Ensemble number
         }
 
-        # GUI object to keep track of state
-        self.gui = DataloggrGui.DataloggrGui()
+        # Incoming serial data
+        self.serial_raw_bytes = None
 
     def get_plot(self):
         return self.plot
@@ -73,18 +80,6 @@ class AppManager:
             self.socketio.emit('status_report',
                                {'data': 'Server generated event', 'count': count},
                                namespace='/rti')
-
-            # Get the Datalogger status
-            #dl_status = logger_hardware.get_status()
-
-            # Set the Datalogger status to the gui
-            #gui.set_dl_status(dl_status)
-
-            # Get the gui status as json
-            #json_gui = gui.get_json()
-
-            # Pass the status to the websocket
-            #self.socketio.emit('gui_status', json_gui, namespace='/test')
 
     def get_serial_ports(self):
         return serial_port.get_serial_ports()
@@ -157,7 +152,25 @@ class AppManager:
 
     def send_serial_break(self):
         if self.serial_port:
+
+            # Clear the buffer of the serial data
+            # We can then check for the results
+            self.app_state["serial_raw_ascii"] = ""
+
             self.serial_port.send_break()
+
+            # Wait a second for result
+            time.sleep(1.2)
+
+            # Get the results of the BREAK
+            break_results = self.app_state["serial_raw_ascii"]
+            logging.debug(break_results)
+
+            # Decode the BREAK result
+            self.app_state["adcp_break"] = self.adcp_codec.decode_BREAK(break_results)
+            logging.debug(self.app_state["adcp_break"])
+
+            return self.app_state["adcp_break"]
 
     def send_serial_cmd(self, cmd):
         if self.serial_port:
@@ -173,16 +186,18 @@ class AppManager:
             try:
                 if self.serial_port.raw_serial.in_waiting:
                     # Read the data from the serial port
-                    data = self.serial_port.read(self.serial_port.raw_serial.in_waiting)
+                    self.serial_raw_bytes = self.serial_port.read(self.serial_port.raw_serial.in_waiting)
 
                     try:
-                        ascii_data = data.decode('ascii')
-                        logging.debug(ascii_data)
+                        # Convert the data to ASCII
+                        self.app_state["serial_raw_ascii"] = self.serial_raw_bytes.decode('ascii')
 
+                        # Pass the ASCII serial data to the websocket
                         self.socketio.emit('serial_comm',
-                                           {'data': ascii_data},
+                                           {
+                                               'data': self.app_state["serial_raw_ascii"]
+                                           },
                                            namespace='/rti')
-                        print(ascii_data)
 
                     except Exception as ex:
                         # Do nothing
@@ -191,12 +206,17 @@ class AppManager:
                     # Record data if turned on
                     #vm.record_data(data)
 
-                    # Publish the data
-                    #vm.on_serial_data(data)
+                    # Record the raw data if turned on
 
+                    # Pass data to codec to decode ADCP data
+                    self.adcp_codec.add(self.serial_raw_bytes)
+
+                # Put a small sleep to allow more data to go into the buffer
                 time.sleep(0.01)
+
             except serial.SerialException as se:
                 logging.error("Error using the serial port.\n" + str(se))
                 self.disconnect_serial()
             except Exception as ex:
                 logging.error("Error processing the data.\n" + str(ex))
+                self.disconnect_serial()
