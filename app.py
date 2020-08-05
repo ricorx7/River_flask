@@ -10,7 +10,7 @@ import plotly
 import plotly.graph_objs as go
 from app_manager import AppManager
 import logging
-import plotlydash.dashboard
+from plotlydash.dashboard import Dashboard
 
 
 import pandas as pd
@@ -33,7 +33,8 @@ ui.width = 1200
 socketio = SocketIO(app, async_mode=async_mode)
 
 # Create a plotly dashboard using flask
-app = plotlydash.dashboard.create_dashboard(app)
+plotly_dash = Dashboard()
+app = plotly_dash.create_dashboard(app)
 
 thread = None
 thread_lock = Lock()
@@ -49,7 +50,7 @@ selected_serial_port = None
 selected_baud_rate = None
 
 # Maintain the state of the application
-app_mgr = AppManager(socketio=socketio)
+app_mgr = AppManager(socketio=socketio, plotly_dash=plotly_dash)
 
 
 @app.route("/")
@@ -67,6 +68,11 @@ def main_page():
 def display_plot():
     bar = app_mgr.get_plot()
     return render_template('plot_full.j2', plot=bar, state=app_mgr.app_state)
+
+
+@app.route('/live_plot')
+def display_live_plot():
+    return render_template('live_plot.html', state=app_mgr.app_state)
 
 
 @app.route('/term')

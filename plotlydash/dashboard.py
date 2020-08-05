@@ -15,40 +15,59 @@ Y = deque(maxlen=20)
 Y.append(1)
 
 
-def create_dashboard(server):
-    """Create a Plotly Dash dashboard."""
-    dash_app = Dash(
-        server=server,
-        routes_pathname_prefix='/dashapp/',
-        external_stylesheets=[
-            '/static/css/styles.css',
-        ]
-    )
+class Dashboard:
 
-    dash_app.layout = html.Div(
-        [
-            dcc.Graph(id='live-graph', animate=True),
-            dcc.Interval(
-                id='graph-update',
-                interval=1 * 1000
-            ),
-        ]
-    )
+    def __init__(self):
+        self.datetime_queue = deque(maxlen=100)
+        self.systemp_queue = deque(maxlen=100)
+        self.datetime_queue.append(1)   # Temp data until real data comes
+        self.systemp_queue.append(1)    # Temp data until real data comes
+        self.is_data_received = False
 
-    @dash_app.callback(Output('live-graph', 'figure'), [Input("graph-update", "n_intervals")], )
-    def update_graph_scatter(n):
-        X.append(X[-1] + 1)
-        Y.append(Y[-1] + Y[-1] * random.uniform(-0.1, 0.1))
-
-        data = plotly.graph_objs.Scatter(
-            x=list(X),
-            y=list(Y),
-            name='Scatter',
-            mode='lines+markers'
+    def create_dashboard(self, server):
+        """Create a Plotly Dash dashboard."""
+        dash_app = Dash(
+            server=server,                                          # Connect to Flask Server
+            routes_pathname_prefix='/dashapp/',                     # Path to dashboard
+            external_stylesheets=['/static/css/styles.css', ]       # style sheet
         )
 
-        return {'data': [data], 'layout': go.Layout(xaxis=dict(range=[min(X), max(X)]),
-                                                    yaxis=dict(range=[min(Y), max(Y)]), )}
+        # Create the Dashboard layout
+        dash_app.layout = html.Div(
+            [
+                dcc.Graph(id='live-graph', animate=True),
+                dcc.Interval(
+                    id='graph-update',
+                    interval=1 * 1000
+                ),
+            ]
+        )
 
-    return dash_app.server
+        @dash_app.callback(Output('live-graph', 'figure'), [Input("graph-update", "n_intervals")], )
+        def update_graph_scatter(n):
+
+            data = plotly.graph_objs.Scatter(
+                x=list(self.datetime_queue),
+                y=list(self.systemp_queue),
+                name='Temperature',
+                mode='lines+markers'
+            )
+
+            return {'data': [data], 'layout': go.Layout(xaxis=dict(range=[min(self.datetime_queue), max(self.datetime_queue)]),
+                                                        yaxis=dict(range=[min(self.systemp_queue), max(self.systemp_queue)]), )}
+
+        return dash_app.server
+
+    def add_ens(self, ens):
+        if ens.IsEnsembleData and ens.IsAncillaryData:
+            # Remove the temporary data when we get any data
+            if not self.is_data_received:
+                self.datetime_queue.clear()
+                self.systemp_queue.clear()
+                self.is_data_received = True
+
+            # Add data to the queue
+            self.datetime_queue.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
+            self.systemp_queue.append(ens.AncillaryData.SystemTemp)
+
 

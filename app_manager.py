@@ -13,11 +13,13 @@ import time
 import datetime
 from collections import deque
 
+
 class AppManager:
 
-    def __init__(self, socketio):
+    def __init__(self, socketio, plotly_dash):
         self.plot = self.create_plot()
         self.socketio = socketio
+        self.plotly_dash = plotly_dash
 
         # ADCP Codec to decode the ADCP data
         self.adcp_codec = AdcpCodec()
@@ -205,6 +207,9 @@ class AppManager:
             self.voltage_queue.append(voltage)
             self.ens_dt_queue.append(datetime_now)
             self.socketio.emit('update_plot', {'x': list(self.ens_dt_queue), 'y': list(self.voltage_queue)}, namespace='/rti')
+
+            # Add data to Plotly Dashboard
+            self.plotly_dash.add_ens(ens)
 
     def serial_thread_worker(self):
         """

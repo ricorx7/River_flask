@@ -7,12 +7,12 @@ function makePlotly( x, y ){
 
     var data = [trace1];
 
-    var livePlotDiv = document.getElementById("live-plot");
+    var livePlotDiv = document.getElementById("volt-plot");
     if(livePlotDiv)
     {
-        Plotly.newPlot('live-plot', data);
+        Plotly.newPlot('volt-plot', data);
     }
-}
+};
 
 function streamPlotly( x, y ){
     console.log(x)
@@ -26,9 +26,9 @@ function streamPlotly( x, y ){
 
     var data = [trace1];
 
-    var livePlotDiv = document.getElementById("live-plot");
+    var livePlotDiv = document.getElementById("volt-plot");
     if(livePlotDiv)
     {
-        Plotly.react('live-plot', data);
+        Plotly.react('volt-plot', data);
     }
 };

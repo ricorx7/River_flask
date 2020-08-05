@@ -1,1 +1,9 @@
-<div id='live-plot'><!-- Plotly chart will be drawn inside this DIV --></div>
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <iframe src="/dashapp" frameborder='0' noresize='noresize' style='position: absolute; background: transparent; width: 80%; height:80%; border: none;'></iframe>
+</div>
+
+{% endblock %}
