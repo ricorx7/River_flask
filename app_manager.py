@@ -10,7 +10,8 @@ import threading
 import logging
 import serial
 import time
-
+import datetime
+from collections import deque
 
 class AppManager:
 
@@ -40,6 +41,10 @@ class AppManager:
             "adcp_break": {},                                   # Results of a BREAK statement
             "adcp_ens_num": 0,                                  # Latest Ensemble number
         }
+
+        self.is_volt_plot_init = False
+        self.voltage_queue = deque(maxlen=100)
+        self.ens_dt_queue = deque(maxlen=100)
 
         # Incoming serial data
         self.serial_raw_bytes = None
@@ -189,6 +194,18 @@ class AppManager:
                                },
                                namespace='/rti')
 
+            # Display the voltage live
+            if not self.is_volt_plot_init:
+                self.socketio.emit('bootstrap',
+                                   {'x': [ens.EnsembleData.datetime_str()], 'y': [0]}, namespace='/rti')
+                self.is_volt_plot_init = True
+
+            datetime_now = ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f")
+            voltage = ens.SystemSetup.Voltage
+            self.voltage_queue.append(voltage)
+            self.ens_dt_queue.append(datetime_now)
+            self.socketio.emit('update_plot', {'x': list(self.ens_dt_queue), 'y': list(self.voltage_queue)}, namespace='/rti')
+
     def serial_thread_worker(self):
         """
         Thread worker to handle reading the serial port.
@@ -214,7 +231,9 @@ class AppManager:
 
                     except Exception as ex:
                         # Do nothing
-                        logging.error("Error Reading serial data" + str(ex))
+                        # This is to prevent from seeing binary data on screen
+                        logging.info("Error Reading serial data" + str(ex))
+
 
                     # Record data if turned on
                     #vm.record_data(data)

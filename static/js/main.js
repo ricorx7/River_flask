@@ -19,14 +19,14 @@ $(document).ready(function()
     // The callback function is invoked when a connection with the
     // server is established.
     socket.on('connect', function() {
-        socket.emit('my_event', {data: 'I\'m connected!'});
+        makePlotly(0, 0);
     });
 
     // Event handler for new connections.
     // The callback function is invoked when a connection with the
     // server is established.
     socket.on('disconnect', function() {
-        socket.emit('my_event', {data: 'I\'m connected!'});
+
     });
 
 
@@ -57,6 +57,16 @@ $(document).ready(function()
         // Update the ensemble number
         $("#adcpEnsNumLabel").text(msg.adcp_ens_num);
         $("#adcpEnsNumStatusLabel").text(msg.adcp_ens_num);
+    });
+
+    socket.on('bootstrap', function (msg) {
+        // Function defined in plot.js
+        makePlotly( msg.x, msg.y );
+    });
+
+    socket.on('update_plot', function (msg) {
+        // Function defined in plot.js
+        streamPlotly( msg.x, msg.y );
     });
 
 });

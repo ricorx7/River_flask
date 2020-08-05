@@ -5,3 +5,4 @@ flask-wtf
 pypiwin32
 humanize
 plotly
+dash

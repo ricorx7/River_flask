@@ -10,6 +10,7 @@ import plotly
 import plotly.graph_objs as go
 from app_manager import AppManager
 import logging
+import plotlydash.dashboard
 
 
 import pandas as pd
@@ -30,6 +31,9 @@ ui.width = 1200
 
 # Websockets to have seamless communication to the webpage
 socketio = SocketIO(app, async_mode=async_mode)
+
+# Create a plotly dashboard using flask
+app = plotlydash.dashboard.create_dashboard(app)
 
 thread = None
 thread_lock = Lock()
@@ -62,7 +66,7 @@ def main_page():
 @app.route('/plot')
 def display_plot():
     bar = app_mgr.get_plot()
-    return render_template('plot_full.j2', plot=bar)
+    return render_template('plot_full.j2', plot=bar, state=app_mgr.app_state)
 
 
 @app.route('/term')
