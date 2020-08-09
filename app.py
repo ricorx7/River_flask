@@ -33,14 +33,11 @@ ui.width = 1200
 socketio = SocketIO(app, async_mode=async_mode)
 
 # Create a plotly dashboard using flask
-plotly_dash = Dashboard()
-app = plotly_dash.create_dashboard(app)
+#plotly_dash = Dashboard()
+#app = plotly_dash.create_dashboard(app)
 
 thread = None
 thread_lock = Lock()
-
-# Datalogger hardware
-logger_hardware = data_logger.DataLoggerHardware()
 
 # Socket IO 
 count = 0
@@ -50,7 +47,7 @@ selected_serial_port = None
 selected_baud_rate = None
 
 # Maintain the state of the application
-app_mgr = AppManager(socketio=socketio, plotly_dash=plotly_dash)
+app_mgr = AppManager(socketio=socketio)
 
 
 @app.route("/")
@@ -206,5 +203,5 @@ ui.run()
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=False)
+    socketio.run(app, debug=False, host='0.0.0.0')
 

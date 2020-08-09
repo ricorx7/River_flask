@@ -12,14 +12,18 @@ import serial
 import time
 import datetime
 from collections import deque
+import re
+from plot_manager import PlotManager
 
 
 class AppManager:
 
-    def __init__(self, socketio, plotly_dash):
+    def __init__(self, socketio):
         self.plot = self.create_plot()
         self.socketio = socketio
-        self.plotly_dash = plotly_dash
+
+        # Plot manager to keep track of plots
+        self.plot_mgr = PlotManager(app_mgr=self, socketio=socketio)
 
         # ADCP Codec to decode the ADCP data
         self.adcp_codec = AdcpCodec()
@@ -40,13 +44,14 @@ class AppManager:
             "baud_list": self.get_baud_rates(),                 # List of all available Baud rates
             "serial_port_list": self.get_serial_ports(),        # List of all available Serial Ports
             "serial_raw_ascii": "",                             # Raw ascii from the serial port
+            "max_ascii_buff": 10000,                            # Maximum number of characters to keep in serial ASCII buffer
             "adcp_break": {},                                   # Results of a BREAK statement
             "adcp_ens_num": 0,                                  # Latest Ensemble number
         }
 
-        self.is_volt_plot_init = False
-        self.voltage_queue = deque(maxlen=100)
-        self.ens_dt_queue = deque(maxlen=100)
+        #self.is_volt_plot_init = False
+        #self.voltage_queue = deque(maxlen=100)
+        #self.ens_dt_queue = deque(maxlen=100)
 
         # Incoming serial data
         self.serial_raw_bytes = None
@@ -196,20 +201,23 @@ class AppManager:
                                },
                                namespace='/rti')
 
-            # Display the voltage live
-            if not self.is_volt_plot_init:
-                self.socketio.emit('bootstrap',
-                                   {'x': [ens.EnsembleData.datetime_str()], 'y': [0]}, namespace='/rti')
-                self.is_volt_plot_init = True
+            # Update the plot manager
+            self.plot_mgr.add_ens(ens)
 
-            datetime_now = ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f")
-            voltage = ens.SystemSetup.Voltage
-            self.voltage_queue.append(voltage)
-            self.ens_dt_queue.append(datetime_now)
-            self.socketio.emit('update_plot', {'x': list(self.ens_dt_queue), 'y': list(self.voltage_queue)}, namespace='/rti')
+            # Display the voltage live
+            #if not self.is_volt_plot_init:
+            #    self.socketio.emit('bootstrap',
+            #                       {'x': [ens.EnsembleData.datetime_str()], 'y': [0]}, namespace='/rti')
+            #    self.is_volt_plot_init = True
+
+            #datetime_now = ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f")
+            #voltage = ens.SystemSetup.Voltage
+            #self.voltage_queue.append(voltage)
+            #self.ens_dt_queue.append(datetime_now)
+            #self.socketio.emit('update_plot', {'x': list(self.ens_dt_queue), 'y': list(self.voltage_queue)}, namespace='/rti')
 
             # Add data to Plotly Dashboard
-            self.plotly_dash.add_ens(ens)
+            #self.plotly_dash.add_ens(ens)
 
     def serial_thread_worker(self):
         """
@@ -224,8 +232,16 @@ class AppManager:
                     self.serial_raw_bytes = self.serial_port.read(self.serial_port.raw_serial.in_waiting)
 
                     try:
+                        # Convert to ASCII
+                        # Ignore any non-ASCII characters
+                        raw_serial_ascii = self.serial_raw_bytes.decode('ascii', 'ignore')
+
+                        # Replace ACK and NAK
+                        raw_serial_ascii = raw_serial_ascii.replace("\6", "[ACK]")
+                        #raw_serial_ascii = raw_serial_ascii.replace("\15", "[NAK]")
+
                         # Convert the data to ASCII
-                        self.app_state["serial_raw_ascii"] = self.serial_raw_bytes.decode('ascii')
+                        self.app_state["serial_raw_ascii"] += raw_serial_ascii
 
                         # Pass the ASCII serial data to the websocket
                         self.socketio.emit('serial_comm',
@@ -233,6 +249,15 @@ class AppManager:
                                                'data': self.app_state["serial_raw_ascii"]
                                            },
                                            namespace='/rti')
+
+                        # Maintain a fixed buffer size
+                        ascii_buff_size = len(self.app_state["serial_raw_ascii"])
+                        if ascii_buff_size > 0:
+                            if ascii_buff_size > self.app_state["max_ascii_buff"]:
+                                # Remove the n number of characters to keep it within the buffer size
+                                remove_buff_size = ascii_buff_size - self.app_state["max_ascii_buff"]
+                                self.app_state["serial_raw_ascii"] = self.app_state["serial_raw_ascii"][remove_buff_size:]
+
 
                     except Exception as ex:
                         # Do nothing

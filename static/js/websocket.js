@@ -19,7 +19,7 @@ $(document).ready(function()
     // The callback function is invoked when a connection with the
     // server is established.
     socket.on('connect', function() {
-        makePlotly(0, 0);
+        init_volt_plot(0, 0);
     });
 
     // Event handler for new connections.
@@ -59,14 +59,21 @@ $(document).ready(function()
         $("#adcpEnsNumStatusLabel").text(msg.adcp_ens_num);
     });
 
-    socket.on('bootstrap', function (msg) {
-        // Function defined in plot.js
-        makePlotly( msg.x, msg.y );
+    /**
+     * Create the plots.  This will get the initial date and time for the
+     * plots.
+     */
+    socket.on('init_plots', function (msg) {
+        // Function defined in volt_plot.js
+        init_volt_plot( msg.x, msg.y );
     });
 
-    socket.on('update_plot', function (msg) {
-        // Function defined in plot.js
-        streamPlotly( msg.x, msg.y );
+    /**
+     * Update the volt plot with the latest data.
+     */
+    socket.on('update_volt_plot', function (msg) {
+        // Function defined in volt_plot.js
+        update_volt_plot( msg.x, msg.y );
     });
 
 });
