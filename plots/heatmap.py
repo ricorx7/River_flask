@@ -84,7 +84,9 @@ class HeatmapPlot:
 
         # Pull out the data from the dataframe
         bin_depth = (mag_data['bin_num'] * self.bin_size) + self.blank
-        dates = mag_data['dt']
+        #dates = mag_data['dt']
+        mag_data['dt_new'] = pd.to_datetime(mag_data['dt'])
+        dates = mag_data['dt_new'].dt.strftime("%Y-%m-%d %H:%M:%S.%f")
         mag_val = mag_data['val']
         bt_x = bt_range['dt']
         bt_y = bt_range['val']

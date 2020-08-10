@@ -21,16 +21,16 @@ class VoltageLinePlot:
         This will pull out the latest data from the given ensemble.
         :param ens: Latest Ensemble.
         """
-        if ens.IsEnsembleData:
+        #if ens.IsEnsembleData:
             # Display the voltage live
-            if not self.plot_state["is_volt_plot_init"]:
-                self.socketio.emit('init_plots',
-                                   {
-                                       'x': [ens.EnsembleData.datetime_str()],
-                                       'y': [0]
-                                   },
-                                   namespace='/rti')
-                self.plot_state["is_volt_plot_init"] = True
+            #if not self.plot_state["is_volt_plot_init"]:
+            #    self.socketio.emit('init_plots',
+            #                       {
+            #                           'x': [ens.EnsembleData.datetime_str()],
+            #                           'y': [0]
+            #                       },
+            #                       namespace='/rti')
+            #    self.plot_state["is_volt_plot_init"] = True
 
         # Update the voltage plot
         if ens.IsEnsembleData and ens.IsSystemSetup:
