@@ -1,14 +1,24 @@
 from collections import deque
 import pandas as pd
+from rti_python.Writer.rti_sql import RtiSQL
 
 
 class HeatmapPlot:
     """
+    Plot the water vector data to the heatmap.  The x-axis will the datetime.  The y-axis will the bin depths.  The
+    values will be the magnitude or direction.  There is also a bottom track line added to the plot.
+    The plot is a Plotly javascript file.  The data is received through a websocket.  Then the plot is updated
+    in javascript.
+
     Colorscale options:
     Viridis, Inferno, Cividis, RdBu, Bluered_r, ["red", "green", "blue"]), [(0, "red"), (0.5, "green"), (1, "blue")]
     """
 
     def __init__(self):
+        """
+        Initialize the dataframe to hold all the ensemble data.
+        The dataframe will contain all the Velocity Vector information.
+        """
         self.df_earth_columns = ["dt", "type", "ss_code", "ss_config", "bin_num", "beam", "blank", "bin_size", "val"]
         # Use the load_data. notation to use variable within inner function
         self.ens_count = 0
@@ -60,7 +70,13 @@ class HeatmapPlot:
                 # df_all_earth.append(df_earth, ignore_index=True, sort=False)
                 self.df_all_earth = pd.concat([self.df_all_earth, df_earth])
 
-    def plot_update(self, socketio):
+    def update_plot(self, socketio):
+        """
+        Update the plot using the SocketIO.  The latest
+        information will be sent to the websocket and update
+        the plotly plot.  The data is passed using a JSON object.
+        :param socketio: SocketIO (websocket) connection.
+        """
 
         # Get the magnitude data from dataframe
         mag_data = self.df_all_earth.loc[self.df_all_earth['type'] == "Magnitude"]
@@ -75,13 +91,18 @@ class HeatmapPlot:
 
         # Send the magnitude heatmap plot update
         socketio.emit('update_heatmap_plot',
-                           {
-                               'hm_x': dates.tolist(),
-                               'hm_y': bin_depth.tolist(),
-                               'hm_z': mag_val.tolist(),
-                               "bt_x": bt_x.tolist(),
-                               "bt_y": bt_y.tolist(),
-                               "is_upward": False,
-                               "colorscale": 'Cividis'
-                           },
-                           namespace='/rti')
+                      {
+                          'hm_x': dates.tolist(),
+                          'hm_y': bin_depth.tolist(),
+                          'hm_z': mag_val.tolist(),
+                          "bt_x": bt_x.tolist(),
+                          "bt_y": bt_y.tolist(),
+                          "is_upward": False,
+                          "colorscale": 'Cividis'
+                      },
+                      namespace='/rti')
+
+    def plot_update_sqlite(self, sqlite_path):
+        # Create a connection to the sqlite file
+        sql = RtiSQL(conn=sqlite_path, is_sqlite=True)
+

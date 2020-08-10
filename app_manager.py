@@ -49,6 +49,7 @@ class AppManager:
             "max_ascii_buff": 10000,                            # Maximum number of characters to keep in serial ASCII buffer
             "adcp_break": {},                                   # Results of a BREAK statement
             "adcp_ens_num": 0,                                  # Latest Ensemble number
+            "selected_files": [],                               # Selected files to playback
         }
 
         #self.is_volt_plot_init = False
@@ -196,6 +197,19 @@ class AppManager:
         Display a dialog box to select the files.
         :return: List of all the files selected.
         """
+        self.app_state["selected_files"] = self.select_files_playback()
+
+        # Plot all the plots
+        if len(self.app_state["selected_files"]) >= 1:
+            self.plot_mgr.playback_sqlite(self.app_state["selected_files"][0])
+
+        return self.app_state["selected_files"]
+
+    def select_files_playback(self):
+        """
+        Display a dialog box to select the files.
+        :return: List of all the files selected.
+        """
         # Dialog to ask for a file to select
         root = mtTkinter.Tk()
         root.overrideredirect(True)         # Used to Bring window to front and focused
@@ -210,6 +224,9 @@ class AppManager:
         return file_paths
 
     def process_ensemble(self, sender, ens):
+        """"
+        Process the next incoming ensemble.
+        """
         if ens.IsEnsembleData:
             print(str(ens.EnsembleData.EnsembleNumber))
             self.app_state["adcp_ens_num"] = ens.EnsembleData.EnsembleNumber
