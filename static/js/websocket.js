@@ -65,7 +65,8 @@ $(document).ready(function()
      */
     socket.on('init_plots', function (msg) {
         // Function defined in volt_plot.js
-        init_volt_plot( msg.x, msg.y );
+        init_volt_plot();
+        init_heatmap_plot();
     });
 
     /**
@@ -74,6 +75,18 @@ $(document).ready(function()
     socket.on('update_volt_plot', function (msg) {
         // Function defined in volt_plot.js
         update_volt_plot( msg.x, msg.y );
+    });
+
+    /**
+     * Update the heatmap plot with the latest data.
+     */
+    socket.on('update_heatmap_plot', function (msg) {
+        // Function defined in volt_plot.js
+        update_heatmap_plot( msg.hm_x,
+                             msg.hm_y,
+                             msg.hm_z,
+                             msg.bt_x,
+                             msg.bt_y);
     });
 
 });

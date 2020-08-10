@@ -10,7 +10,6 @@ import plotly
 import plotly.graph_objs as go
 from app_manager import AppManager
 import logging
-from plotlydash.dashboard import Dashboard
 
 
 import pandas as pd
@@ -160,6 +159,19 @@ def serial_break():
     break_result = app_mgr.send_serial_break()
 
     return jsonify(break_result)
+
+
+@app.route('/playback_files', methods=['POST'])
+def playback_files():
+    logging.debug("CALL Playback File")
+
+    logging.debug(request.form)
+
+    # Send the command to the serial port
+    playback_files_selected = app_mgr.playback_files()
+
+    # Return good status
+    return jsonify({'files': playback_files_selected})
 
 
 @socketio.on('connect', namespace='/rti')

@@ -194,4 +194,23 @@ $(document).ready(function()
         event.preventDefault();
 
     });
+
+    /**
+     * Handle Sending a Playback file selection.
+     */
+    $('#btnPlaybackFiles').click(function(event) {
+
+        $.ajax({
+            type: "POST",
+            url: "/playback_files",
+            data: { },
+            success: function (response) {
+                console.log(response)  // display the returned data in the console.
+            }
+        });
+
+        // Prevent it being called twice
+        event.preventDefault();
+    });
+
 });

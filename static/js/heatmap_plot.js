@@ -1,12 +1,21 @@
-function init_volt_plot( ){
-    var trace1 = {
+function init_heatmap_plot( ){
+    var heatmap = {
+      x: [],
+      y: [],
+      z: [],
+      type: 'heatmap',
+      colorscale: 'Cividis',
+      name: 'Water Velocity'
+    };
+
+    var bt_range = {
       x: [],
       y: [],
       type: 'scatter',
-      name: 'voltage'
+      name: 'Range'
     };
 
-    var data = [trace1];
+    var data = [heatmap, bt_range];
 
     layout = {
         showlegend: true,               // Show the line legend
@@ -18,10 +27,10 @@ function init_volt_plot( ){
         displaylogo: false              // Remove plotly button
     }
 
-    var livePlotDiv = document.getElementById("volt-plot");
+    var livePlotDiv = document.getElementById("heatmap-plot");
     if(livePlotDiv)
     {
-        Plotly.newPlot('volt-plot', data, layout, additional_param);
+        Plotly.newPlot('heatmap-plot', data, layout, additional_param);
     }
 };
 
@@ -29,15 +38,24 @@ function init_volt_plot( ){
  * Receive the plot data from the websocket.
  * Update the plot with the new information.
 */
-function update_volt_plot( x, y ){
+function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y  ){
     //console.log(x)
     //#console.log(y)
 
-    var trace1 = {
-      x: x,
-      y: y,
+    var heatmap = {
+      x: hm_x,
+      y: hm_y,
+      z: hm_z,
+      type: 'heatmap',
+      colorscale: 'Cividis',
+      name: 'Water Velocity'
+    };
+
+    var bt_range = {
+      x: bt_x,
+      y: bt_y,
       type: 'scatter',
-      name: "voltage (v)"
+      name: 'Range'
     };
 
     layout = {
@@ -50,11 +68,11 @@ function update_volt_plot( x, y ){
         displaylogo: false              // Remove plotly button
     }
 
-    var data = [trace1];
+    var data = [heatmap, bt_range];
 
-    var livePlotDiv = document.getElementById("volt-plot");
+    var livePlotDiv = document.getElementById("heatmap-plot");
     if(livePlotDiv)
     {
-        Plotly.react('volt-plot', data, layout);
+        Plotly.react('heatmap-plot', data, layout);
     }
 };

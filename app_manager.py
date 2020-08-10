@@ -2,6 +2,8 @@ import plotly
 import plotly.graph_objs as go
 import pandas as pd
 import numpy as np
+from mttkinter import mtTkinter
+from tkinter import filedialog
 import json
 from rti_python.Comm.adcp_serial_port import AdcpSerialPort
 import rti_python.Comm.adcp_serial_port as serial_port
@@ -189,6 +191,24 @@ class AppManager:
         if self.serial_port:
             self.serial_port.send_cmd(cmd=cmd)
 
+    def playback_files(self):
+        """
+        Display a dialog box to select the files.
+        :return: List of all the files selected.
+        """
+        # Dialog to ask for a file to select
+        root = mtTkinter.Tk()
+        root.overrideredirect(True)         # Used to Bring window to front and focused
+        root.geometry('0x0+0+0')            # Used to Bring window to front and focused
+        root.focus_force()                  # Used to Bring window to front and focused
+        filetypes = [("DB files", "*.db"), ("ENS Files", "*.ens"), ("BIN Files", "*.bin"), ('All Files', '*.*')]
+        file_paths = filedialog.askopenfilenames(parent=root, title="Select File to Playback", filetypes=filetypes)
+        root.withdraw()
+
+        print(str(file_paths))
+
+        return file_paths
+
     def process_ensemble(self, sender, ens):
         if ens.IsEnsembleData:
             print(str(ens.EnsembleData.EnsembleNumber))
@@ -203,21 +223,6 @@ class AppManager:
 
             # Update the plot manager
             self.plot_mgr.add_ens(ens)
-
-            # Display the voltage live
-            #if not self.is_volt_plot_init:
-            #    self.socketio.emit('bootstrap',
-            #                       {'x': [ens.EnsembleData.datetime_str()], 'y': [0]}, namespace='/rti')
-            #    self.is_volt_plot_init = True
-
-            #datetime_now = ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f")
-            #voltage = ens.SystemSetup.Voltage
-            #self.voltage_queue.append(voltage)
-            #self.ens_dt_queue.append(datetime_now)
-            #self.socketio.emit('update_plot', {'x': list(self.ens_dt_queue), 'y': list(self.voltage_queue)}, namespace='/rti')
-
-            # Add data to Plotly Dashboard
-            #self.plotly_dash.add_ens(ens)
 
     def serial_thread_worker(self):
         """
