@@ -12,8 +12,10 @@ class VoltageLinePlot:
         Initialize the queues to hold the latest ensemble data.
         """
         # Store all the data to plot
-        self.voltage_queue = deque(maxlen=max_display_points)                    # Voltage Line Plot Volt Values
-        self.voltage_dt_queue = deque(maxlen=max_display_points)                 # Voltage Line Plot Datetime
+        self.voltage_queue = deque(maxlen=max_display_points)               # Voltage Line Plot Volt Values
+        self.voltage_dt_queue = deque(maxlen=max_display_points)            # Voltage Line Plot Datetime
+
+        self.is_update = False                                              # Flag to tell whether to update the plot
 
     def add_ens(self, ens):
         """
@@ -39,12 +41,16 @@ class VoltageLinePlot:
             self.voltage_queue.append(voltage)
             self.voltage_dt_queue.append(datetime_now)
 
+            # Update the plot
+            self.is_update = True
+
     def update_plot(self, socketio):
         """
         Update the plot with the latest data.
         Send the latest data to the socketio.
         :param socketio: SocketIO connection.
         """
+        #if self.is_update:
         # Send the volt plot update
         socketio.emit('update_volt_plot',
                       {
@@ -53,7 +59,13 @@ class VoltageLinePlot:
                       },
                       namespace='/rti')
 
+            # Update the flag
+            #self.is_update = False
+
     def plot_update_sqlite(self, sqlite_path):
+        """
+        Get the data from the sqlite DB file.  Then update the queues to update the plot.
+        """
         # Create a connection to the sqlite file
         sql = RtiSQL(conn=sqlite_path, is_sqlite=True)
 
@@ -64,3 +76,15 @@ class VoltageLinePlot:
         self.voltage_dt_queue.extend(df_volt["datetime"])
         self.voltage_queue.extend(df_volt["voltage"])
 
+        # Update the flag to plot
+        self.is_update = True
+
+    def clear(self):
+        """
+        Clear the plots.
+        """
+        self.voltage_queue.clear()
+        self.voltage_dt_queue.clear()
+
+        # Update flag to update the plot
+        self.is_update = True

@@ -79,6 +79,12 @@ class AppManager:
 
         return graphJSON
 
+    def clear_plots(self):
+        """
+        Clear all the plots.
+        """
+        self.plot_mgr.clear_plots()
+
     def socketio_background_thread(self):
         """
         Background worker.  This will maintain the status of the
@@ -147,6 +153,9 @@ class AppManager:
 
             # Send a BREAK to get ADCP Information
             self.send_serial_break()
+
+            # Clear the plots to get new data
+            self.clear_plots()
 
             return self.app_state
 

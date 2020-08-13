@@ -88,7 +88,9 @@ $(document).ready(function()
                              msg.hm_y,
                              msg.hm_z,
                              msg.bt_x,
-                             msg.bt_y);
+                             msg.bt_y,
+                             msg.bottom_x,
+                             msg.bottom_y);
     });
 
 });

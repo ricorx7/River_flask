@@ -145,6 +145,16 @@ class PlotManager:
         This will query all the data, then update all the plots.
         :param sqlite_filepath: File path to sqlite DB RTI file.
         """
-        self.volt_line.plot_update_sqlite(sqlite_path=sqlite_filepath)
+        # Clear the current plots
+        self.clear_plots()
 
+        # Pass the db to the plots
+        self.volt_line.plot_update_sqlite(sqlite_path=sqlite_filepath)
         self.heatmap.plot_update_sqlite(sqlite_path=sqlite_filepath)
+
+    def clear_plots(self):
+        """
+        Clear the plots.
+        """
+        self.volt_line.clear()
+        self.heatmap.clear()
