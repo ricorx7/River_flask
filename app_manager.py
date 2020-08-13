@@ -145,6 +145,9 @@ class AppManager:
             self.app_state["serial_status"].clear()
             self.app_state["serial_status"].append("Connected")
 
+            # Send a BREAK to get ADCP Information
+            self.send_serial_break()
+
             return self.app_state
 
     def disconnect_serial(self):

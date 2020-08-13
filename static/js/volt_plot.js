@@ -8,15 +8,15 @@ function init_volt_plot( ){
 
     var data = [trace1];
 
-    layout = {
+    var layout = {
         showlegend: true,               // Show the line legend
         uirevision:'true',              // Keep the UI zoom levels on update
-    }
+    };
 
-    additional_param = {
+    var additional_param = {
         responsive: true,               // Adjust the plot size with the window size
         displaylogo: false              // Remove plotly button
-    }
+    };
 
     var livePlotDiv = document.getElementById("volt-plot");
     if(livePlotDiv)
@@ -40,15 +40,15 @@ function update_volt_plot( x, y ){
       name: "voltage (v)"
     };
 
-    layout = {
+    var layout = {
         showlegend: true,               // Show the line legend
         uirevision:'true',              // Keep the UI zoom levels on update
-    }
+    };
 
-    additional_param = {
+    var additional_param = {
         responsive: true,               // Adjust the plot size with the window size
         displaylogo: false              // Remove plotly button
-    }
+    };
 
     var data = [trace1];
 

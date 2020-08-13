@@ -19,7 +19,8 @@ $(document).ready(function()
     // The callback function is invoked when a connection with the
     // server is established.
     socket.on('connect', function() {
-        init_volt_plot(0, 0);
+        init_volt_plot();
+        init_heatmap_plot();
     });
 
     // Event handler for new connections.
@@ -45,7 +46,7 @@ $(document).ready(function()
      * communication
      */
     socket.on('serial_comm', function(msg, cb) {
-        console.log("serial_comm");
+        //console.log("serial_comm");
         // Update the console
         $("textarea#txtSerialOutput").html(msg.data);
     });
@@ -64,7 +65,8 @@ $(document).ready(function()
      * plots.
      */
     socket.on('init_plots', function (msg) {
-        // Function defined in volt_plot.js
+        // Function defined in volt_plot.js and heatmap_plot.js
+        console.log("Init Plots");
         init_volt_plot();
         init_heatmap_plot();
     });
@@ -81,7 +83,7 @@ $(document).ready(function()
      * Update the heatmap plot with the latest data.
      */
     socket.on('update_heatmap_plot', function (msg) {
-        // Function defined in volt_plot.js
+        // Function defined in heatmap_plot.js
         update_heatmap_plot( msg.hm_x,
                              msg.hm_y,
                              msg.hm_z,

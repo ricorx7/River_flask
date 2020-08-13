@@ -14,15 +14,18 @@ class HeatmapPlot:
     Viridis, Inferno, Cividis, RdBu, Bluered_r, ["red", "green", "blue"]), [(0, "red"), (0.5, "green"), (1, "blue")]
     """
 
-    def __init__(self):
+    def __init__(self, max_display_points):
         """
-        Initialize the dataframe to hold all the ensemble data.
-        The dataframe will contain all the Velocity Vector information.
+        Initialize the queues to hold all the ensemble data.
+        The queues will contain all the accumulated information.
         """
-        self.df_earth_columns = ["dt", "type", "ss_code", "ss_config", "bin_num", "beam", "blank", "bin_size", "val"]
-        # Use the load_data. notation to use variable within inner function
-        self.ens_count = 0
-        self.df_all_earth = pd.DataFrame({}, columns=self.df_earth_columns)
+        self.queue_mag = deque(maxlen=max_display_points)
+        self.queue_dt = deque(maxlen=max_display_points)
+        self.queue_bin_depth = deque(maxlen=max_display_points)
+        self.queue_bt_dt = deque(maxlen=max_display_points)
+        self.queue_bt_range = deque(maxlen=max_display_points)
+
+        self.bin_depth_list = []
 
         self.blank = 0.0
         self.bin_size = 0.0
@@ -44,31 +47,28 @@ class HeatmapPlot:
         #############################################
 
         # Keep track of previous BT speed
-        if ens.IsBottomTrack and ens.BottomTrack.NumBeams >= 3:
-            df_bt = ens.BottomTrack.encode_df(ens.EnsembleData.datetime(),
-                                              ens.EnsembleData.SysFirmwareSubsystemCode,
-                                              ens.EnsembleData.SubsystemConfig)
+        if ens.IsEnsembleData and ens.IsBottomTrack and ens.BottomTrack.NumBeams >= 3:
+            self.queue_bt_range.append(ens.BottomTrack.avg_range())
+            self.queue_bt_dt.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
 
-        # Create Dataframe
-        if ens.IsAncillaryData and ens.IsEnsembleData:
+        # Get the Ensemble data
+        if ens.IsAncillaryData and ens.IsEnsembleData and ens.IsEarthVelocity:
             self.blank = ens.AncillaryData.FirstBinRange
             self.bin_size = ens.AncillaryData.BinSize
             self.is_upward_looking = ens.AncillaryData.is_upward_facing()
 
-            df_earth = ens.EarthVelocity.encode_df(ens.EnsembleData.datetime(),
-                                                   ens.EnsembleData.SysFirmwareSubsystemCode,
-                                                   ens.EnsembleData.SubsystemConfig,
-                                                   0.0,  # Replace BadVelocity
-                                                   0.0,  # Replace BadVelocity
-                                                   False,  # Do not include bad velocity
-                                                   False)  # Do not include bad velocity
+            # Add the datetime data
+            self.queue_dt.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
 
-            # Merge the data to the global buffer
-            if self.df_all_earth.empty:
-                self.df_all_earth = df_earth
-            else:
-                # df_all_earth.append(df_earth, ignore_index=True, sort=False)
-                self.df_all_earth = pd.concat([self.df_all_earth, df_earth])
+            # Add the magnitude data
+            self.queue_mag.append(list(ens.EarthVelocity.Magnitude))
+
+            # Create the bin depth list and add it to the queue
+            temp_bin_depth_list = []
+            for bin_num in range(ens.EnsembleData.NumBins):
+                temp_bin_depth_list.append((bin_num * ens.AncillaryData.BinSize) + ens.AncillaryData.FirstBinRange)
+            self.bin_depth_list = temp_bin_depth_list
+            #self.queue_bin_depth.append(bin_depth_list)
 
     def update_plot(self, socketio):
         """
@@ -77,34 +77,48 @@ class HeatmapPlot:
         the plotly plot.  The data is passed using a JSON object.
         :param socketio: SocketIO (websocket) connection.
         """
-
-        # Get the magnitude data from dataframe
-        mag_data = self.df_all_earth.loc[self.df_all_earth['type'] == "Magnitude"]
-        bt_range = self.df_all_earth.loc[self.df_all_earth['type'] == "BT_Avg_Range"]
-
-        # Pull out the data from the dataframe
-        bin_depth = (mag_data['bin_num'] * self.bin_size) + self.blank
-        #dates = mag_data['dt']
-        mag_data['dt_new'] = pd.to_datetime(mag_data['dt'])
-        dates = mag_data['dt_new'].dt.strftime("%Y-%m-%d %H:%M:%S.%f")
-        mag_val = mag_data['val']
-        bt_x = bt_range['dt']
-        bt_y = bt_range['val']
-
         # Send the magnitude heatmap plot update
         socketio.emit('update_heatmap_plot',
                       {
-                          'hm_x': dates.tolist(),
-                          'hm_y': bin_depth.tolist(),
-                          'hm_z': mag_val.tolist(),
-                          "bt_x": bt_x.tolist(),
-                          "bt_y": bt_y.tolist(),
+                          'hm_x': list(self.queue_dt),
+                          'hm_y': self.bin_depth_list,
+                          'hm_z': list(self.queue_mag),
+                          "bt_x": list(self.queue_bt_dt),
+                          "bt_y": list(self.queue_bt_range),
                           "is_upward": False,
                           "colorscale": 'Cividis'
                       },
                       namespace='/rti')
 
     def plot_update_sqlite(self, sqlite_path):
+        """
+        Get the data from the sqlite file.
+        Then add it to the queue so it will be plotted on the next update.
+        """
         # Create a connection to the sqlite file
         sql = RtiSQL(conn=sqlite_path, is_sqlite=True)
 
+        df_bt_range = sql.get_bottom_track_range(1)
+        df_mag = sql.get_mag(1)
+
+        # Find all the unique datetime to separate the ensembles
+        unique_dt = df_mag.datetime.unique()
+        for dt in unique_dt:
+            # Accumulate all the datetime
+            self.queue_dt.append(dt)
+
+            # Get the list of all the magnitude values for this dt
+            # Then accumulate all the magnitude values
+            mag_dt_list = df_mag.loc[df_mag['datetime'] == dt]
+            self.queue_mag.append(mag_dt_list['val'].tolist())
+
+            # Accumulate the depths of each bin
+            depth_list = (mag_dt_list['bin_num'] * mag_dt_list['bin_size'] + mag_dt_list['blank']).tolist()
+            #self.queue_mag.append(depth_list)
+            self.bin_depth_list = depth_list
+
+        # Get all the range values for the bottom track line
+        self.queue_bt_range.append(df_bt_range['avgRange'].tolist())
+
+        # Get the datetime for the bottom track values
+        self.queue_bt_dt.append(df_bt_range['datetime'].tolist())

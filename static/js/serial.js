@@ -6,7 +6,7 @@ $(document).ready(function()
      * This will reset the serial port list
      * then set the previously selected COMM port.
      */
-    $('#btnScan').click(function() {
+    $('#btnScan').click(function(event) {
         console.log("SCAN BUTTON CLICKED");
 
         // grab values
@@ -39,7 +39,7 @@ $(document).ready(function()
      * This will reset the serial port list
      * then set the previously selected COMM port.
      */
-    $('#btnConnect').click(function() {
+    $('#btnConnect').click(function(event) {
         console.log("CONNECT BUTTON CLICKED");
 
         // grab values
@@ -86,7 +86,7 @@ $(document).ready(function()
      * This will reset the serial port list
      * then set the previously selected COMM port.
      */
-    $('#btnDisconnect').click(function() {
+    $('#btnDisconnect').click(function(event) {
         console.log("DISCONNECT BUTTON CLICKED");
 
         $.ajax({
@@ -122,7 +122,7 @@ $(document).ready(function()
      * This will reset the serial port list
      * then set the previously selected COMM port.
      */
-    $('#btnBrowseFolder').click(function() {
+    $('#btnBrowseFolder').click(function(event) {
         console.log("Browse Folder");
 
         $.ajax({
@@ -143,7 +143,7 @@ $(document).ready(function()
     /**
      * Handle Sending a BREAK to the serial port.
      */
-    $('#btnSerialBreak').click(function() {
+    $('#btnSerialBreak').click(function(event) {
         console.log("BREAK");
 
         $.ajax({
@@ -199,8 +199,19 @@ $(document).ready(function()
      * Handle Sending a Playback file selection.
      */
     $('#btnPlaybackFiles').click(function(event) {
+        playbackApiCall(event);
+    });
 
-        $.ajax({
+    /**
+     * Handle Sending a Playback file selection.
+     */
+    $('#btnNavbarPlaybackFiles').click(function(event) {
+        playbackApiCall(event);
+    });
+
+    function playbackApiCall(event)
+    {
+            $.ajax({
             type: "POST",
             url: "/playback_files",
             data: { },
@@ -211,6 +222,6 @@ $(document).ready(function()
 
         // Prevent it being called twice
         event.preventDefault();
-    });
+    };
 
 });

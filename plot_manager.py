@@ -25,7 +25,7 @@ class PlotManager:
         }
 
         # Heatmap plot
-        self.heatmap = HeatmapPlot()
+        self.heatmap = HeatmapPlot(self.plot_state["max_display_points"])
         self.volt_line = VoltageLinePlot(self.plot_state["max_display_points"])
 
         # Init previous good Bottom Track Velocities
@@ -146,3 +146,5 @@ class PlotManager:
         :param sqlite_filepath: File path to sqlite DB RTI file.
         """
         self.volt_line.plot_update_sqlite(sqlite_path=sqlite_filepath)
+
+        self.heatmap.plot_update_sqlite(sqlite_path=sqlite_filepath)

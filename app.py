@@ -63,7 +63,7 @@ def main_page():
 @app.route('/plot')
 def display_plot():
     bar = app_mgr.get_plot()
-    return render_template('plot_full.j2', plot=bar, state=app_mgr.app_state)
+    return render_template('plot_all.html', plot=bar, state=app_mgr.app_state)
 
 
 @app.route('/live_plot')

@@ -13,7 +13,7 @@
 
 <body>
     {% include 'nav.html' %}
-    <div class="container">
+    <div class="container-fluid">
 
         {% for category, message in get_flashed_messages(with_categories=true) %}
             <p class="{{ category }}">{{ message }}</p>
@@ -56,7 +56,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         var url = 'http://127.0.0.1:5001/GUI-is-still-open';
         fetch(url, { mode: 'no-cors'});
-        setInterval(function(){ fetch(url, { mode: 'no-cors'});}, 5000)();
+        setInterval(function(){ fetch(url, { mode: 'no-cors'});}, 5000);
     });
     </script>
 
