@@ -199,6 +199,9 @@ $(document).ready(function()
      * Handle Sending a Playback file selection.
      */
     $('#btnPlaybackFiles').click(function(event) {
+        // Prevent it being called twice
+        event.preventDefault();
+
         playbackApiCall(event);
     });
 
@@ -206,22 +209,27 @@ $(document).ready(function()
      * Handle Sending a Playback file selection.
      */
     $('#btnNavbarPlaybackFiles').click(function(event) {
+        // Prevent it being called twice
+        event.preventDefault();
+
         playbackApiCall(event);
     });
 
-    function playbackApiCall(event)
-    {
-            $.ajax({
+    function playbackApiCall(event) {
+        // Prevent it being called twice
+        event.preventDefault();
+
+        $("#playbackModal").modal('show');
+
+        $.ajax({
             type: "POST",
             url: "/playback_files",
             data: { },
             success: function (response) {
                 console.log(response)  // display the returned data in the console.
+                $("#playbackModal").modal('hide');
             }
         });
-
-        // Prevent it being called twice
-        event.preventDefault();
     };
 
 });

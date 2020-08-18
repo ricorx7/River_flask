@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Tabular -->
+        <div class="col-md-4">
+            <!-- Status -->
+            <div class="row">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                  <button type="button" class="btn btn-secondary"><i class="fab fa-bluetooth"></i></button>
+                  <button type="button" class="btn btn-secondary"><i class="fas fa-satellite"></i></button>
+                  <button type="button" class="btn btn-secondary"><i class="fas fa-battery-full"></i></button>
+                </div>
+            </div>
+            <!-- Tabular -->
+            <div class="row">
+                 {% include 'adcp_status.html' %}
+            </div>
+            <!-- Amplitude -->
+            <div class="row">
+                {% include 'volt_plot.html' %}
+            </div>
+        </div>
+        <!-- Plots -->
+        <div class="col">
+            <div class="row">
+                {% include 'depth_plot.html' %}
+            </div>
+            <div class="row h-33">
+                {% include 'shiptrack_plot.html' %}
+            </div>
+            <div class="row h-33">
+                {% include 'heatmap_plot.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

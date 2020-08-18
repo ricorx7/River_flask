@@ -21,6 +21,8 @@ $(document).ready(function()
     socket.on('connect', function() {
         init_volt_plot();
         init_heatmap_plot();
+        init_shiptrack_plot();
+        init_depth_plot();
     });
 
     // Event handler for new connections.
@@ -69,6 +71,8 @@ $(document).ready(function()
         console.log("Init Plots");
         init_volt_plot();
         init_heatmap_plot();
+        init_shiptrack_plot();
+        init_depth_plot();
     });
 
     /**
@@ -90,7 +94,13 @@ $(document).ready(function()
                              msg.bt_x,
                              msg.bt_y,
                              msg.bottom_x,
-                             msg.bottom_y);
+                             msg.bottom_y,
+                             msg.is_upward,
+                             msg.colorscale);
+
+        update_depth_plot( msg.bt_x,
+                            msg.bt_y,
+                            msg.is_upward);
     });
 
 });

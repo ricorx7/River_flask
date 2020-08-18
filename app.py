@@ -25,8 +25,8 @@ async_mode = None
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'you-will-never-guess'
 ui = FlaskUI(app)
-ui.height = 900
-ui.width = 1200
+#ui.height = 900
+#ui.width = 1200
 
 # Websockets to have seamless communication to the webpage
 socketio = SocketIO(app, async_mode=async_mode)
@@ -57,7 +57,7 @@ def main_page():
     #return serial_page(None, None)
     bar = app_mgr.get_plot()
     #return render_template('serial.j2', form=form)
-    return render_template('main.html', plot=bar, state=app_mgr.app_state)
+    return render_template('home.html', plot=bar, state=app_mgr.app_state)
 
 
 @app.route('/plot')

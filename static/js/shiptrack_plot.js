@@ -1,9 +1,9 @@
-function init_heatmap_plot( ){
+function init_shiptrack_plot( ){
     var trace1 = {
       x: [],
       y: [],
       type: 'scatter',
-      name: 'Bottom Track Range (m)',
+      name: 'Bottom Track Range (m)'
     };
 
     var data = [trace1];
@@ -12,12 +12,6 @@ function init_heatmap_plot( ){
         showlegend: true,               // Show the line legend
         uirevision:'true',              // Keep the UI zoom levels on update
         autosize: true,                 // Maximum size
-        margin: {
-            l: 0,
-            r: 0,
-            b: 0,
-            t: 0
-        },
     };
 
     var additional_param = {
@@ -25,12 +19,12 @@ function init_heatmap_plot( ){
         displaylogo: false              // Remove plotly button
     };
 
-    console.log("Look for Heatmap");
-    var heatmapPlotDiv = document.getElementById("heatmap-plot");
-    if(heatmapPlotDiv)
+    console.log("Look for ShipTrack");
+    var shiptrackPlotDiv = document.getElementById("shiptrack-plot");
+    if(shiptrackPlotDiv)
     {
-        console.log("Create Heatmap");
-        Plotly.newPlot('heatmap-plot', data, layout, additional_param);
+        console.log("Create ShipTrack");
+        Plotly.newPlot('shiptrack-plot', data, layout, additional_param);
     }
 };
 
@@ -38,7 +32,7 @@ function init_heatmap_plot( ){
  * Receive the plot data from the websocket.
  * Update the plot with the new information.
 */
-function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
+function update_shiptrack_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
                                 bottom_x, bottom_y,
                                 is_upward,
                                 colorscale){
@@ -89,18 +83,6 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
             showlegend: true,               // Show the line legend
             autosize: true,
             uirevision:'true',              // Keep the UI zoom levels on update
-            yaxis: {
-                automargin: true,
-            },
-            xaxis: {
-                automargin: true,
-            },
-            margin: {
-                l: 30,
-                r: 30,
-                b: 30,
-                t: 30
-            },
         };
     }
     else
@@ -111,17 +93,7 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
             uirevision:'true',              // Keep the UI zoom levels on update
             yaxis: {
                 autorange: 'reversed',
-                automargin: true,
-            },
-            xaxis: {
-                automargin: true,
-            },
-            margin: {
-                l: 30,
-                r: 30,
-                b: 30,
-                t: 30,
-            },
+            }
         };
     }
 
@@ -132,9 +104,10 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
 
     var data = [hm, bt, bottom_line];
 
-    var heatmapPlotDiv = document.getElementById("heatmap-plot");
-    if(heatmapPlotDiv)
+
+    var shiptrackPlotDiv = document.getElementById("shiptrack-plot");
+    if(shiptrackPlotDiv)
     {
-        Plotly.react('heatmap-plot', data, layout);
+        Plotly.newPlot('shiptrack-plot', data, layout);
     }
 };

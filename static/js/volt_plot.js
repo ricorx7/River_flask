@@ -11,6 +11,7 @@ function init_volt_plot( ){
     var layout = {
         showlegend: true,               // Show the line legend
         uirevision:'true',              // Keep the UI zoom levels on update
+        autosize: true,                 // Maximum size
     };
 
     var additional_param = {
@@ -43,6 +44,7 @@ function update_volt_plot( x, y ){
     var layout = {
         showlegend: true,               // Show the line legend
         uirevision:'true',              // Keep the UI zoom levels on update
+        autosize: true,                 // Maximum size
     };
 
     var additional_param = {

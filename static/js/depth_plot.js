@@ -1,23 +1,18 @@
-function init_heatmap_plot( ){
+function init_depth_plot( ){
     var trace1 = {
       x: [],
       y: [],
       type: 'scatter',
-      name: 'Bottom Track Range (m)',
+      name: 'Depth (m)'
     };
 
     var data = [trace1];
 
     var layout = {
+        title: "Depth Plot",
         showlegend: true,               // Show the line legend
         uirevision:'true',              // Keep the UI zoom levels on update
         autosize: true,                 // Maximum size
-        margin: {
-            l: 0,
-            r: 0,
-            b: 0,
-            t: 0
-        },
     };
 
     var additional_param = {
@@ -25,12 +20,12 @@ function init_heatmap_plot( ){
         displaylogo: false              // Remove plotly button
     };
 
-    console.log("Look for Heatmap");
-    var heatmapPlotDiv = document.getElementById("heatmap-plot");
-    if(heatmapPlotDiv)
+    console.log("Look for Depth");
+    var depthPlotDiv = document.getElementById("depth-plot");
+    if(depthPlotDiv)
     {
-        console.log("Create Heatmap");
-        Plotly.newPlot('heatmap-plot', data, layout, additional_param);
+        console.log("Create Depth");
+        Plotly.newPlot('depth-plot', data, layout, additional_param);
     }
 };
 
@@ -38,10 +33,7 @@ function init_heatmap_plot( ){
  * Receive the plot data from the websocket.
  * Update the plot with the new information.
 */
-function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
-                                bottom_x, bottom_y,
-                                is_upward,
-                                colorscale){
+function update_depth_plot( bt_x, bt_y, is_upward ){
 
     var bt = {
       x: bt_x,
@@ -55,32 +47,12 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
       showlegend: false,
     };
 
-    var bottom_line = {
-      x: bottom_x,
-      y: bottom_y,
-      type: 'scatter',
-      name: "Bottom Track Range (m)",
-      fill: 'tonexty',                               // Make it a line with shade below,
-      showlegend: false,
-      fillcolor: 'rgba(105, 105, 105, 255)',
-      line: {
-        color: 'rgba(105, 105, 105, 255)',
-        width: 10
-      }
-    };
+    //console.log(bt_x)
+    //console.log(bt_y)
 
     //console.log(hm_x)
     //console.log(hm_y)
     //console.log(hm_z)
-
-    var hm = {
-        x: hm_x,
-        y: hm_y,
-        z: hm_z,
-        type: 'heatmap',
-        name: 'Magnitude',
-        colorscale: colorscale
-    };
 
 
     if(is_upward)
@@ -90,7 +62,7 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
             autosize: true,
             uirevision:'true',              // Keep the UI zoom levels on update
             yaxis: {
-                automargin: true,
+                autorange: 'reversed',
             },
             xaxis: {
                 automargin: true,
@@ -99,7 +71,7 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
                 l: 30,
                 r: 30,
                 b: 30,
-                t: 30
+                t: 30,
             },
         };
     }
@@ -125,16 +97,12 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
         };
     }
 
-    var additional_param = {
-        responsive: true,               // Adjust the plot size with the window size
-        displaylogo: false              // Remove plotly button
-    };
+    var data = [bt];
 
-    var data = [hm, bt, bottom_line];
 
-    var heatmapPlotDiv = document.getElementById("heatmap-plot");
-    if(heatmapPlotDiv)
+    var depthPlotDiv = document.getElementById("depth-plot");
+    if(depthPlotDiv)
     {
-        Plotly.react('heatmap-plot', data, layout);
+        Plotly.newPlot('depth-plot', data, layout);
     }
 };

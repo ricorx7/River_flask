@@ -2,6 +2,7 @@ from collections import deque
 import pandas as pd
 import numpy as np
 from rti_python.Writer.rti_sql import RtiSQL
+from rti_python.Ensemble.Ensemble import Ensemble
 
 
 class HeatmapPlot:
@@ -15,12 +16,13 @@ class HeatmapPlot:
     Viridis, Inferno, Cividis, RdBu, Bluered_r, ["red", "green", "blue"]), [(0, "red"), (0.5, "green"), (1, "blue")]
     """
 
-    def __init__(self, max_display_points):
+    def __init__(self, max_display_points, bad_velocity=Ensemble.BadVelocity):
         """
         Initialize the queues to hold all the ensemble data.
         The queues will contain all the accumulated information.
         """
         self.max_display_points = max_display_points
+        self.bad_velocity = bad_velocity
 
         #self.queue_mag = deque(maxlen=max_display_points)
         self.list_mag = []
@@ -53,11 +55,6 @@ class HeatmapPlot:
         # Assumed Ship Speed has already been removed
         #############################################
 
-        # Keep track of previous BT speed
-        if ens.IsEnsembleData and ens.IsBottomTrack and ens.BottomTrack.NumBeams >= 3:
-            self.queue_bt_range.append(ens.BottomTrack.avg_range())
-            self.queue_bt_dt.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
-
         # Get the Ensemble data
         if ens.IsAncillaryData and ens.IsEnsembleData and ens.IsEarthVelocity:
             self.blank = ens.AncillaryData.FirstBinRange
@@ -67,15 +64,35 @@ class HeatmapPlot:
             # Add the datetime data
             self.queue_dt.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
 
-            # Add the magnitude data
-            self.queue_mag.append(list(ens.EarthVelocity.Magnitude))
+            # Clear the current depth list
+            self.bin_depth_list.clear()
 
-            # Create the bin depth list and add it to the queue
-            temp_bin_depth_list = []
+            # Go through each bin to add the data
             for bin_num in range(ens.EnsembleData.NumBins):
-                temp_bin_depth_list.append((bin_num * ens.AncillaryData.BinSize) + ens.AncillaryData.FirstBinRange)
-            self.bin_depth_list = temp_bin_depth_list
-            #self.queue_bin_depth.append(bin_depth_list)
+                # Add a magnitude entry in the list for each bin
+                if bin_num >= len(self.list_mag):
+                    # Add a deque to the list for each bin
+                    self.list_mag.append(deque(maxlen=self.max_display_points))
+
+                # Add  the magnitude data
+                if not Ensemble.is_bad_velocity(ens.EarthVelocity.Magnitude[bin_num]):
+                    self.list_mag[bin_num].append(ens.EarthVelocity.Magnitude[bin_num])
+                else:
+                    # If BAD_VELOCITY, then set the value to NONE
+                    self.list_mag[bin_num].append(None)
+
+                # Set the bin depth
+                self.bin_depth_list.append(self.blank + (self.bin_size * bin_num))
+
+        # Keep track of BT Range
+        if ens.IsEnsembleData and ens.IsBottomTrack and ens.BottomTrack.NumBeams >= 3:
+            avg_range = ens.BottomTrack.avg_range()
+            self.queue_bt_range.append(avg_range)
+            self.queue_bt_dt.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
+
+            # Create a line at the bottom of the plot to connect to the bottom track line
+            # Make the length of the list the same as the number of range values
+            self.queue_bottom.append(max(self.bin_depth_list))
 
         # Set flag to update the plot
         self.is_update = True
@@ -91,12 +108,6 @@ class HeatmapPlot:
         mag_list = []
         for mag_deque in self.list_mag:
             mag_list.append(list(mag_deque))
-
-        # If downward looking, reverse the plot
-        #temp_bin_depth_list = self.bin_depth_list
-        #if not self.is_upward_looking:
-        #    mag_list.reverse()
-        #    temp_bin_depth_list.reverse()
 
         #if self.is_update:
         # Send the magnitude heatmap plot update
@@ -137,21 +148,14 @@ class HeatmapPlot:
         # Get the first dt to get all the bins associated with a specific datetime (ensemble)
         first_dt = unique_dt.flat[0]
         first_ens = df_mag.loc[df_mag['datetime'] == first_dt]
-        #self.bin_depth_list = (first_ens['bin_num'] * first_ens['bin_size'] + first_ens['blank']).tolist()
         self.is_upward_looking = bool(first_ens['isUpwardLooking'].iloc[0])
         self.bin_size = first_ens['bin_size'].iloc[0]
-        self.blank = first_ens['bin_size'].iloc[0]
+        self.blank = first_ens['blank'].iloc[0]
 
         # Get all the unique bin numbers
-        # Sort them based on is_upward_looking
+        # Sort them to be in order
         unique_bin_num = df_mag.bin_num.unique()
-
-        if self.is_upward_looking:
-            unique_bin_num.sort()
-        else:
-            # Reorder the array for downward looking
-            # Smallest depth is last entry
-            -np.sort(-unique_bin_num)
+        unique_bin_num.sort()
 
         for bin_num in unique_bin_num:
             # Add the bins depths to the list
@@ -160,33 +164,17 @@ class HeatmapPlot:
             # Get all the values for each bin
             bin_mags = df_mag.loc[df_mag['bin_num'] == bin_num]
 
-            # Create a deque for each bin
-            self.list_mag.append(deque(maxlen=self.max_display_points))
-
             # Remove any bad velocity data
             # Bad velocity is greater than 88.88
             # Convert to numpy array first then remove value
             bin_mags_np = np.array(bin_mags['mag'].tolist())
-            bin_mags_list = np.where(bin_mags_np > 88.8, None, bin_mags_np).tolist()
+            bin_mags_list = np.where(bin_mags_np >= self.bad_velocity, None, bin_mags_np).tolist()
+
+            # Add a deque to the list for each bin
+            self.list_mag.append(deque(maxlen=self.max_display_points))
 
             # Set all the magnitude values to the list
-            #self.queue_mag.append(bin_mags["mag"].tolist())
-            #self.list_mag[bin_num].extend(bin_mags["mag"].tolist())
             self.list_mag[bin_num].extend(bin_mags_list)
-
-        #for dt in unique_dt:
-        # Accumulate all the datetime
-        #self.queue_dt.append(dt)
-
-        # Get the list of all the magnitude values for this dt
-        # Then accumulate all the magnitude values
-        #mag_dt_list = df_mag.loc[df_mag['datetime'] == dt]
-        #self.queue_mag.append(mag_dt_list['val'].tolist())
-
-        # Accumulate the depths of each bin
-        #depth_list = (mag_dt_list['bin_num'] * mag_dt_list['bin_size'] + mag_dt_list['blank']).tolist()
-        #self.queue_mag.append(depth_list)
-        #self.bin_depth_list = depth_list
 
         # Get all the range values for the bottom track line
         self.queue_bt_range.extend(df_bt_range['avgRange'].tolist())
@@ -207,10 +195,10 @@ class HeatmapPlot:
         """
         self.queue_dt.clear()
         self.queue_bt_dt.clear()
-        #self.queue_mag.clear()
         self.list_mag.clear()
         self.queue_bin_depth.clear()
         self.queue_bt_range.clear()
+        self.bin_depth_list.clear()
 
         # Set flag to update the plot
         self.is_update = True
