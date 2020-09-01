@@ -25,8 +25,8 @@ async_mode = None
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'you-will-never-guess'
 ui = FlaskUI(app)
-#ui.height = 900
-#ui.width = 1200
+ui.height = 900
+ui.width = 1200
 
 # Websockets to have seamless communication to the webpage
 socketio = SocketIO(app, async_mode=async_mode)

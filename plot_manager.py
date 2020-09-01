@@ -4,6 +4,7 @@ import time
 from rti_python.Ensemble.Ensemble import Ensemble
 from plots.heatmap import HeatmapPlot
 from plots.voltage import VoltageLinePlot
+from plots.shiptrack import ShiptrackPlot
 import pandas as pd
 
 
@@ -27,6 +28,7 @@ class PlotManager:
         # Heatmap plot
         self.heatmap = HeatmapPlot(self.plot_state["max_display_points"])
         self.volt_line = VoltageLinePlot(self.plot_state["max_display_points"])
+        self.shiptrack = ShiptrackPlot(self.plot_state["max_display_points"])
 
         # Init previous good Bottom Track Velocities
         self.prev_bt_east = Ensemble.BadVelocity
@@ -84,6 +86,9 @@ class PlotManager:
                 # Update the heatmap plot
                 self.heatmap.update_plot(self.socketio)
 
+                # Update the shiptrack plot
+                self.shiptrack.update_plot(self.socketio)
+
                 # Sleep a minimum about of time to ensure we are not updating too fast
                 time.sleep(self.plot_state["thread_interval"])
 
@@ -104,6 +109,9 @@ class PlotManager:
 
         # Set the Velocity Vector data for heatmap
         self.heatmap.add_ens(ens)
+
+        # Add the Ship track data
+        self.shiptrack.add_ens(ens)
 
         # Wake up the thread
         self.plot_realtime_thread_event.set()
@@ -151,6 +159,7 @@ class PlotManager:
         # Pass the db to the plots
         self.volt_line.plot_update_sqlite(sqlite_path=sqlite_filepath)
         self.heatmap.plot_update_sqlite(sqlite_path=sqlite_filepath)
+        self.shiptrack.plot_update_sqlite(sqlite_path=sqlite_filepath)
 
     def clear_plots(self):
         """
@@ -158,3 +167,4 @@ class PlotManager:
         """
         self.volt_line.clear()
         self.heatmap.clear()
+        self.shiptrack.clear()

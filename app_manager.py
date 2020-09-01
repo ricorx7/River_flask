@@ -49,7 +49,8 @@ class AppManager:
             "max_ascii_buff": 10000,                            # Maximum number of characters to keep in serial ASCII buffer
             "adcp_break": {},                                   # Results of a BREAK statement
             "adcp_ens_num": 0,                                  # Latest Ensemble number
-            "selected_files": [],                               # Selected files to playback
+            "selected_files": [],                               # Selected files to playback,
+
         }
 
         #self.is_volt_plot_init = False

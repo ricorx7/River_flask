@@ -10,13 +10,48 @@ function init_shiptrack_plot( ){
 
     var layout = {
         showlegend: true,               // Show the line legend
+        autosize: true,
         uirevision:'true',              // Keep the UI zoom levels on update
-        autosize: true,                 // Maximum size
+        margin: {
+            l: 30,
+            r: 30,
+            b: 30,
+            t: 30
+        },
+        yaxis: {
+            automargin: true,
+         },
+        xaxis: {
+            automargin: true,
+        },
+        /*
+        geo: {
+            scope: 'north america',
+            resolution: 50,
+            lonaxis: {
+                'range': [-130, -55]
+            },
+            lataxis: {
+                'range': [40, 70]
+            },
+            showrivers: true,
+            rivercolor: '#fff',
+            showlakes: true,
+            lakecolor: '#fff',
+            showland: true,
+            landcolor: '#EAEAAE',
+            countrycolor: '#d3d3d3',
+            countrywidth: 1.5,
+            subunitcolor: '#d3d3d3'
+        }
+        */
+
     };
 
     var additional_param = {
         responsive: true,               // Adjust the plot size with the window size
-        displaylogo: false              // Remove plotly button
+        displaylogo: false,              // Remove plotly button
+        mapboxAccessToken: "pk.eyJ1Ijoicm93ZXRlY2hpbmMiLCJhIjoiY2tlMmh5ZDA3MDlkcjJ1dWw1Z2E0eGUyNCJ9.CESo0o0akLXS_a8u9-6B_A",
     };
 
     console.log("Look for ShipTrack");
@@ -32,77 +67,89 @@ function init_shiptrack_plot( ){
  * Receive the plot data from the websocket.
  * Update the plot with the new information.
 */
-function update_shiptrack_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
-                                bottom_x, bottom_y,
-                                is_upward,
-                                colorscale){
+function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon){
 
-    var bt = {
-      x: bt_x,
-      y: bt_y,
+    //console.log(lat)
+    //console.log(lon)
+    //console.log(min_lat)
+    //console.log(min_lon)
+    //console.log(max_lat)
+    //console.log(max_lon)
+
+    var st = {
+      x: lat,
+      y: lon,
       type: 'scatter',
-      name: "Bottom Track Range (m)",
+      name: "Ship Track",
+      mode: 'lines',
+      //marker: {
+      //  size: 14
+      //},
       line: {
-        color: 'rgba(255, 69, 0, 255)',
+        color: 'rgb(255, 0, 0)',
         width: 2
       },
       showlegend: false,
     };
 
-    var bottom_line = {
-      x: bottom_x,
-      y: bottom_y,
-      type: 'scatter',
-      name: "Bottom Track Range (m)",
-      fill: 'tonexty',                               // Make it a line with shade below,
-      showlegend: false,
-      fillcolor: 'rgba(105, 105, 105, 255)',
-      line: {
-        color: 'rgba(105, 105, 105, 255)',
-        width: 10
-      }
+    var layout = {
+        showlegend: true,               // Show the line legend
+        autosize: true,
+        uirevision: true,              // Keep the UI zoom levels on update
+        margin: {
+            l: 30,
+            r: 30,
+            b: 30,
+            t: 30
+        },
+        yaxis: {
+            automargin: true,
+         },
+        xaxis: {
+            automargin: true,
+        },
+        /*
+        mapbox: {
+            bearing:0,
+            center: {
+              lat:32,
+              lon:-117
+            },
+            pitch:0,
+            zoom:8
+        },
+        */
+        /*
+        geo: {
+            //scope: 'north america',
+            //resolution: 50,
+            lonaxis: {
+                'range': [ min_lon, max_lon ],
+            },
+            lataxis: {
+                'range': [ min_lat, max_lat ],
+            },
+            projection_type: 'azimuthal equal area',
+            //showrivers: true,
+            //rivercolor: '#fff',
+            showlakes: true,
+            //lakecolor: "rgb(173,216,230)",
+            showland: true,
+            //landcolor: "rgb(212, 212, 212)",
+            //countrycolor: "rgb(212, 212, 212)",
+            //countrywidth: 1.5,
+            //subunitcolor: '#d3d3d3'
+        }
+        */
+
     };
-
-    //console.log(hm_x)
-    //console.log(hm_y)
-    //console.log(hm_z)
-
-    var hm = {
-        x: hm_x,
-        y: hm_y,
-        z: hm_z,
-        type: 'heatmap',
-        name: 'Magnitude',
-        colorscale: colorscale
-    };
-
-
-    if(is_upward)
-    {
-        var layout = {
-            showlegend: true,               // Show the line legend
-            autosize: true,
-            uirevision:'true',              // Keep the UI zoom levels on update
-        };
-    }
-    else
-    {
-        var layout = {
-            showlegend: true,               // Show the line legend
-            autosize: true,
-            uirevision:'true',              // Keep the UI zoom levels on update
-            yaxis: {
-                autorange: 'reversed',
-            }
-        };
-    }
 
     var additional_param = {
         responsive: true,               // Adjust the plot size with the window size
         displaylogo: false              // Remove plotly button
     };
 
-    var data = [hm, bt, bottom_line];
+    var data = [st];
 
 
     var shiptrackPlotDiv = document.getElementById("shiptrack-plot");

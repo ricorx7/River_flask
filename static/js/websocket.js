@@ -84,6 +84,19 @@ $(document).ready(function()
     });
 
     /**
+     * Update the Ship Track plot with the latest data.
+     */
+    socket.on('update_shiptrack_plot', function (msg) {
+        // Function defined in volt_plot.js
+        update_shiptrack_plot( msg.lat,
+                               msg.lon,
+                               msg.min_lat,
+                               msg.min_lon,
+                               msg.max_lat,
+                               msg.max_lon);
+    });
+
+    /**
      * Update the heatmap plot with the latest data.
      */
     socket.on('update_heatmap_plot', function (msg) {
@@ -96,7 +109,9 @@ $(document).ready(function()
                              msg.bottom_x,
                              msg.bottom_y,
                              msg.is_upward,
-                             msg.colorscale);
+                             msg.colorscale,
+                             msg.min_z,
+                             msg.max_z);
 
         update_depth_plot( msg.bt_x,
                             msg.bt_y,

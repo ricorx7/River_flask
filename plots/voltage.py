@@ -72,6 +72,8 @@ class VoltageLinePlot:
         # Get the voltage data from the sqlite file
         df_volt = sql.get_voltage_data(1)
 
+        sql.close()
+
         # Add the data to the queue so the next refresh will show all the data
         self.voltage_dt_queue.extend(df_volt["datetime"])
         self.voltage_queue.extend(df_volt["voltage"])

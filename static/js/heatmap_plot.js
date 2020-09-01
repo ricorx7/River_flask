@@ -41,7 +41,8 @@ function init_heatmap_plot( ){
 function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
                                 bottom_x, bottom_y,
                                 is_upward,
-                                colorscale){
+                                colorscale,
+                                zmin, zmax){
 
     var bt = {
       x: bt_x,
@@ -77,6 +78,8 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
         x: hm_x,
         y: hm_y,
         z: hm_z,
+        zmin: zmin,
+        zmax: zmax,
         type: 'heatmap',
         name: 'Magnitude',
         colorscale: colorscale
