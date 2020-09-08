@@ -9,17 +9,21 @@ class ShiptrackPlot:
     Ship Track line plot.  Send the data to the javascript Plotly plot using SocketIO (websockets).
     """
 
-    def __init__(self, max_display_points):
+    def __init__(self, max_display_points, mag_scale_factor: float = 1.0):
         """
         Initialize the queues to hold the latest ensemble data.
         """
         # Store all the data to plot
-        self.latitude_queue = deque(maxlen=max_display_points)             # Latitude Line Plot Volt Values
-        self.longitude_queue = deque(maxlen=max_display_points)            # Longitude Line Plot Datetime
+        self.latitude_queue = deque(maxlen=max_display_points)              # Latitude Line Plot Volt Values
+        self.longitude_queue = deque(maxlen=max_display_points)             # Longitude Line Plot Datetime
+        self.water_vector_lat_queue = deque(maxlen=max_display_points * 3)  # Water Vector Lines, multiple by 2 to handle null
+        self.water_vector_lon_queue = deque(maxlen=max_display_points * 3)  # Water Vector Lines, multiple by 2 to handle null
+        self.water_vector_desc_queue = deque(maxlen=max_display_points * 3) # Hovertext for each water vector line
         self.min_lat = None
         self.max_lat = None
         self.min_lon = None
         self.max_lon = None
+        self.mag_scale_factor = mag_scale_factor
 
         self.is_update = False                                              # Flag to tell whether to update the plot
 
@@ -51,8 +55,38 @@ class ShiptrackPlot:
                     self.min_lat = min(self.min_lat, latitude)
                     self.min_lon = min(self.min_lon, longitude)
 
-            # Update the plot
-            self.is_update = True
+                # Update the plot
+                self.is_update = True
+
+        # Create the water current vector lines
+        if ens.IsEarthVelocity and ens.IsNmeaData:
+            # Get the average magnitude and direction
+            avg_mag, avg_dir = ens.EarthVelocity.average_mag_dir()
+
+            if avg_mag and avg_dir:
+                # Get the water current vector lat and lon point to plot on the same plot
+                wv_lat, wv_lon = ens.NmeaData.get_new_position(avg_mag * self.mag_scale_factor, avg_dir)
+
+                # Add the original point and the new point to the queue
+                self.water_vector_lat_queue.append(ens.NmeaData.latitude)
+                self.water_vector_lon_queue.append(ens.NmeaData.longitude)
+                self.water_vector_lat_queue.append(wv_lat)
+                self.water_vector_lon_queue.append(wv_lon)
+
+                # Text description of the point
+                # Use None first to place the description on the end point of the line
+                # Ignore the blank point
+                wv_desc = ens.EnsembleData.datetime_str() + " Mag: " + str(round(avg_mag, 2)) + " Dir: " + str(round(avg_dir, 2))
+                self.water_vector_desc_queue.append(None)
+                self.water_vector_desc_queue.append(wv_desc)
+                self.water_vector_desc_queue.append(None)
+
+                # Add a NULL in the list of points to breakup lines
+                self.water_vector_lat_queue.append(None)
+                self.water_vector_lon_queue.append(None)
+
+                # Update the plot
+                self.is_update = True
 
     def update_plot(self, socketio):
         """
@@ -70,6 +104,9 @@ class ShiptrackPlot:
                           'min_lon': self.min_lon,
                           'max_lat': self.max_lat,
                           'max_lon': self.max_lon,
+                          'wv_lat': list(self.water_vector_lat_queue),
+                          'wv_lon': list(self.water_vector_lon_queue),
+                          "wv_desc": list(self.water_vector_desc_queue),
                       },
                       namespace='/rti')
 

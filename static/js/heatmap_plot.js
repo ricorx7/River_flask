@@ -133,7 +133,7 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
         displaylogo: false              // Remove plotly button
     };
 
-    var data = [hm, bt, bottom_line];
+    var data = [hm, bt];
 
     var heatmapPlotDiv = document.getElementById("heatmap-plot");
     if(heatmapPlotDiv)

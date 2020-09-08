@@ -67,7 +67,7 @@ function init_shiptrack_plot( ){
  * Receive the plot data from the websocket.
  * Update the plot with the new information.
 */
-function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon){
+function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, wv_lat, wv_lon, wv_desc){
 
     //console.log(lat)
     //console.log(lon)
@@ -90,6 +90,23 @@ function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon){
         width: 2
       },
       showlegend: false,
+    };
+
+    var wv = {
+      x: wv_lat,
+      y: wv_lon,
+      type: 'scatter',
+      name: "Water Current Vector",
+      mode: 'lines',
+      //marker: {
+      //  size: 14
+      //},
+      line: {
+        color: 'rgb(30, 144, 255)',
+        width: 2
+      },
+      showlegend: false,
+      hovertext: wv_desc,
     };
 
     var layout = {
@@ -149,7 +166,7 @@ function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon){
         displaylogo: false              // Remove plotly button
     };
 
-    var data = [st];
+    var data = [st, wv];
 
 
     var shiptrackPlotDiv = document.getElementById("shiptrack-plot");

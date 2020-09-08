@@ -113,8 +113,11 @@ class HeatmapPlot:
         # Keep track of BT Range
         if ens.IsEnsembleData and ens.IsBottomTrack and ens.BottomTrack.NumBeams >= 3:
             avg_range = ens.BottomTrack.avg_range()
-            self.queue_bt_range.append(avg_range)
-            self.queue_bt_dt.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
+
+            # Check for a good average range
+            if avg_range != 0.0:
+                self.queue_bt_range.append(avg_range)
+                self.queue_bt_dt.append(ens.EnsembleData.datetime().strftime("%Y-%m-%d %H:%M:%S.%f"))
 
             # Create a line at the bottom of the plot to connect to the bottom track line
             # Make the length of the list the same as the number of range values

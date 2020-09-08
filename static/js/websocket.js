@@ -93,7 +93,10 @@ $(document).ready(function()
                                msg.min_lat,
                                msg.min_lon,
                                msg.max_lat,
-                               msg.max_lon);
+                               msg.max_lon,
+                               msg.wv_lat,
+                               msg.wv_lon,
+                               msg.wv_desc);
     });
 
     /**
