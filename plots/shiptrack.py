@@ -1,7 +1,9 @@
 from collections import deque
 from rti_python.Writer.rti_sql import RtiSQL
+from rti_python.Ensemble.NmeaData import NmeaData
 import pandas as pd
 import sqlite3
+from pygeodesy import sphericalNvector
 
 
 class ShiptrackPlot:
@@ -23,6 +25,8 @@ class ShiptrackPlot:
         self.max_lat = None
         self.min_lon = None
         self.max_lon = None
+        self.mid_lat = None
+        self.mid_lon = None
         self.mag_scale_factor = mag_scale_factor
 
         self.is_update = False                                              # Flag to tell whether to update the plot
@@ -94,6 +98,19 @@ class ShiptrackPlot:
         Send the latest data to the socketio.
         :param socketio: SocketIO connection.
         """
+
+        # Choose a ellipsoid
+
+        if self.min_lon and self.min_lat and self.max_lon and self.max_lat:
+            LatLon = sphericalNvector.LatLon
+            min_loc = LatLon(self.min_lat, self.min_lon)
+            max_loc = LatLon(self.max_lat, self.max_lon)
+
+            # Get the Midpoint of the min and max
+            mid_loc = min_loc.midpointTo(max_loc)
+            self.mid_lat = mid_loc.lat
+            self.mid_lon = mid_loc.lon
+
         #if self.is_update:
         # Send the shiptrack plot update
         socketio.emit('update_shiptrack_plot',
@@ -104,6 +121,8 @@ class ShiptrackPlot:
                           'min_lon': self.min_lon,
                           'max_lat': self.max_lat,
                           'max_lon': self.max_lon,
+                          'mid_lat': self.mid_lat,
+                          'mid_lon': self.mid_lon,
                           'wv_lat': list(self.water_vector_lat_queue),
                           'wv_lon': list(self.water_vector_lon_queue),
                           "wv_desc": list(self.water_vector_desc_queue),
@@ -121,7 +140,7 @@ class ShiptrackPlot:
         conn = sqlite3.connect(sqlite_path)
 
         # Get the voltage data from the sqlite file
-        df_lat_lon = pd.read_sql_query("SELECT latitude, longitude "
+        df_lat_lon = pd.read_sql_query("SELECT latitude, longitude, AvgMagnitude, AvgDirection, ensembles.dateTime "
                                        "FROM ensembles "
                                        "INNER JOIN nmea ON ensembles.id=nmea.ensIndex "
                                        "WHERE ensembles.project_id=1;", conn)
@@ -138,6 +157,36 @@ class ShiptrackPlot:
         self.max_lat = max(df_lat_lon["latitude"])
         self.max_lon = max(df_lat_lon["longitude"])
 
+        # Go through each ensemble and add the water vector line to the lat/lon position
+        for ens_row in range(len(df_lat_lon["latitude"])):
+            avg_mag = df_lat_lon["AvgMagnitude"][ens_row]
+            avg_dir = df_lat_lon["AvgDirection"][ens_row]
+            curr_lat = df_lat_lon["latitude"][ens_row]
+            curr_lon = df_lat_lon["longitude"][ens_row]
+            ens_dt = df_lat_lon["dateTime"][ens_row]
+
+            # Get the water current vector lat and lon point to plot on the same plot
+            # Calculate the new position based on the mag and dir
+            wv_lat, wv_lon = NmeaData.get_new_lat_lon_position(curr_lat, curr_lon, avg_mag * self.mag_scale_factor, avg_dir)
+
+            # Add the original point and the new point to the queue
+            self.water_vector_lat_queue.append(curr_lat)
+            self.water_vector_lon_queue.append(curr_lon)
+            self.water_vector_lat_queue.append(wv_lat)
+            self.water_vector_lon_queue.append(wv_lon)
+
+            # Text description of the point
+            # Use None first to place the description on the end point of the line
+            # Ignore the blank point
+            wv_desc = str(ens_dt) + " Mag: " + str(round(avg_mag, 2)) + " Dir: " + str(
+                round(avg_dir, 2))
+            self.water_vector_desc_queue.append(None)
+            self.water_vector_desc_queue.append(wv_desc)
+            self.water_vector_desc_queue.append(None)
+
+            # Add a NULL in the list of points to breakup lines
+            self.water_vector_lat_queue.append(None)
+            self.water_vector_lon_queue.append(None)
 
         # Update the flag to plot
         self.is_update = True
@@ -148,6 +197,9 @@ class ShiptrackPlot:
         """
         self.latitude_queue.clear()
         self.longitude_queue.clear()
+        self.water_vector_lon_queue.clear()
+        self.water_vector_lat_queue.clear()
+        self.water_vector_desc_queue.clear()
 
         self.min_lat = None
         self.max_lat = None

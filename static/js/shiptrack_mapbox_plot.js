@@ -1,9 +1,9 @@
-function init_shiptrack_plot( ){
+function init_shiptrack_mapbox_plot( ){
     var trace1 = {
       x: [],
       y: [],
-      type: 'scatter',
-      name: 'Ship Track'
+      type: 'scattermapbox',
+      name: 'Bottom Track Range (m)'
     };
 
     var data = [trace1];
@@ -51,15 +51,15 @@ function init_shiptrack_plot( ){
     var additional_param = {
         responsive: true,               // Adjust the plot size with the window size
         displaylogo: false,              // Remove plotly button
-        //mapboxAccessToken: "pk.eyJ1Ijoicm93ZXRlY2hpbmMiLCJhIjoiY2tlMmh5ZDA3MDlkcjJ1dWw1Z2E0eGUyNCJ9.CESo0o0akLXS_a8u9-6B_A",
+        mapboxAccessToken: "pk.eyJ1Ijoicm93ZXRlY2hpbmMiLCJhIjoiY2tlMmh5ZDA3MDlkcjJ1dWw1Z2E0eGUyNCJ9.CESo0o0akLXS_a8u9-6B_A",
     };
 
-    console.log("Look for ShipTrack");
-    var shiptrackPlotDiv = document.getElementById("shiptrack-plot");
+    console.log("Look for ShipTrack Mapbox");
+    var shiptrackPlotDiv = document.getElementById("shiptrack-mapbox-plot");
     if(shiptrackPlotDiv)
     {
-        console.log("Create ShipTrack");
-        Plotly.newPlot('shiptrack-plot', data, layout, additional_param);
+        console.log("Create ShipTrack Mapbox");
+        Plotly.newPlot('shiptrack-mapbox-plot', data, layout, additional_param);
     }
 };
 
@@ -67,7 +67,7 @@ function init_shiptrack_plot( ){
  * Receive the plot data from the websocket.
  * Update the plot with the new information.
 */
-function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, mid_lat, mid_lon, wv_lat, wv_lon, wv_desc){
+function update_shiptrack_mapbox_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, mid_lat, mid_lon, wv_lat, wv_lon, wv_desc){
 
     //console.log(lat)
     //console.log(lon)
@@ -77,9 +77,9 @@ function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, mi
     //console.log(max_lon)
 
     var st = {
-      x: lat,
-      y: lon,
-      type: 'scatter',
+      lat: lat,
+      lon: lon,
+      type: 'scattermapbox',
       name: "Ship Track",
       mode: 'lines',
       //marker: {
@@ -93,9 +93,9 @@ function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, mi
     };
 
     var wv = {
-      x: wv_lat,
-      y: wv_lon,
-      type: 'scatter',
+      lat: wv_lat,
+      lon: wv_lon,
+      type: 'scattermapbox',
       name: "Water Current Vector",
       mode: 'lines',
       //marker: {
@@ -113,18 +113,18 @@ function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, mi
         showlegend: true,               // Show the line legend
         autosize: true,
         uirevision: 'true',              // Keep the UI zoom levels on update
-        margin: {
-            l: 30,
-            r: 30,
-            b: 30,
-            t: 30
-        },
         //margin: {
-        //    l: 0,
-        //    r: 0,
-        //    b: 0,
-        //    t: 0
+        //    l: 30,
+        //    r: 30,
+        //    b: 30,
+        //    t: 30
         //},
+        margin: {
+            l: 0,
+            r: 0,
+            b: 0,
+            t: 0
+        },
         yaxis: {
             automargin: true,
             autorange: true,
@@ -134,15 +134,15 @@ function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, mi
             autorange: true,
         },
 
-        //mapbox: {
-        //    bearing:0,
-        //    center: {
-        //      lat: mid_lat,
-        //      lon: mid_lon
-        //    },
-        //    pitch:0,
-        //    zoom:15
-        //},
+        mapbox: {
+            bearing:0,
+            center: {
+              lat: mid_lat,
+              lon: mid_lon
+            },
+            pitch:0,
+            zoom:15
+        },
 
         /*
         geo: {
@@ -172,9 +172,9 @@ function update_shiptrack_plot( lat, lon, min_lat, min_lon, max_lat, max_lon, mi
     var data = [st, wv];
 
 
-    var shiptrackPlotDiv = document.getElementById("shiptrack-plot");
+    var shiptrackPlotDiv = document.getElementById("shiptrack-mapbox-plot");
     if(shiptrackPlotDiv)
     {
-        Plotly.react('shiptrack-plot', data, layout);
+        Plotly.react('shiptrack-mapbox-plot', data, layout);
     }
 };

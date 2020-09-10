@@ -103,6 +103,6 @@ function update_depth_plot( bt_x, bt_y, is_upward ){
     var depthPlotDiv = document.getElementById("depth-plot");
     if(depthPlotDiv)
     {
-        Plotly.newPlot('depth-plot', data, layout);
+        Plotly.react('depth-plot', data, layout);
     }
 };

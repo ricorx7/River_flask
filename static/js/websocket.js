@@ -87,13 +87,28 @@ $(document).ready(function()
      * Update the Ship Track plot with the latest data.
      */
     socket.on('update_shiptrack_plot', function (msg) {
-        // Function defined in volt_plot.js
+        // Function defined in shiptrack_plot.js
         update_shiptrack_plot( msg.lat,
                                msg.lon,
                                msg.min_lat,
                                msg.min_lon,
                                msg.max_lat,
                                msg.max_lon,
+                               msg.mid_lat,
+                               msg.mid_lon,
+                               msg.wv_lat,
+                               msg.wv_lon,
+                               msg.wv_desc);
+
+        // Function defined in shiptrack_mapbox_plot.js
+        update_shiptrack_mapbox_plot( msg.lat,
+                               msg.lon,
+                               msg.min_lat,
+                               msg.min_lon,
+                               msg.max_lat,
+                               msg.max_lon,
+                               msg.mid_lat,
+                               msg.mid_lon,
                                msg.wv_lat,
                                msg.wv_lon,
                                msg.wv_desc);

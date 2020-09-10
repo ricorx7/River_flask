@@ -91,7 +91,7 @@ function update_heatmap_plot( hm_x, hm_y, hm_z, bt_x, bt_y,
         var layout = {
             showlegend: true,               // Show the line legend
             autosize: true,
-            uirevision:'true',              // Keep the UI zoom levels on update
+            uirevision: 'true',              // Keep the UI zoom levels on update
             yaxis: {
                 automargin: true,
             },
