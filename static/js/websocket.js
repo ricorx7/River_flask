@@ -22,6 +22,8 @@ $(document).ready(function()
         init_volt_plot();
         init_heatmap_plot();
         init_shiptrack_plot();
+        init_shiptrack_mapbox_plot();
+        //init_shiptrack_geo_plot();
         init_depth_plot();
     });
 
@@ -72,6 +74,8 @@ $(document).ready(function()
         init_volt_plot();
         init_heatmap_plot();
         init_shiptrack_plot();
+        init_shiptrack_mapbox_plot();
+        //init_shiptrack_geo_plot();
         init_depth_plot();
     });
 
@@ -112,6 +116,7 @@ $(document).ready(function()
                                msg.wv_lat,
                                msg.wv_lon,
                                msg.wv_desc);
+
     });
 
     /**
