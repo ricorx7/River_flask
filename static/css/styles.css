@@ -1,0 +1,8 @@
+.table-sm{
+  font-size: 10px;
+}
+
+.table-sm>thead>tr>th, .table-sm>tbody>tr>th, .table-sm>tfoot>tr>th, .table-sm>thead>tr>td, .table-sm>tbody>tr>td, .table-sm>tfoot>tr>td{
+    padding: 0px;
+    margin: 0px;
+}

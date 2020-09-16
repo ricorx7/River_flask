@@ -62,6 +62,16 @@ $(document).ready(function()
         // Update the ensemble number
         $("#adcpEnsNumLabel").text(msg.adcp_ens_num);
         $("#adcpEnsNumStatusLabel").text(msg.adcp_ens_num);
+
+        // Tabular data
+        $("#adcpEnsNumSysTabularLabel").text(msg.adcp_ens_num);
+        $("#ensTimeSysTabularLabel").text(msg.ens_time);
+        $("#transectDurationSysTabularLabel").text(msg.transect_duration);
+        $("#voltageSysTabularLabel").text(msg.voltage);
+        $("#headingSysTabularLabel").text(msg.heading);
+        $("#pitchSysTabularLabel").text(msg.pitch);
+        $("#rollSysTabularLabel").text(msg.roll);
+        $("#waterTempSysTabularLabel").text(msg.water_temp);
     });
 
     /**

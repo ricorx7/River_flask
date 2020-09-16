@@ -49,6 +49,39 @@ class HeatmapPlot:
         self.bin_size = 0.0
         self.is_upward_looking = False
 
+    def update_plot(self, socketio):
+        """
+        Update the plot using the SocketIO.  The latest
+        information will be sent to the websocket and update
+        the plotly plot.  The data is passed using a JSON object.
+        :param socketio: SocketIO (websocket) connection.
+        """
+        # Convert the list of deque magnitudes to a list of magnitudes
+        mag_list = []
+        for mag_deque in self.list_mag:
+            mag_list.append(list(mag_deque))
+
+        #if self.is_update:
+        # Send the magnitude heatmap plot update
+        socketio.emit('update_heatmap_plot',
+                      {
+                          'hm_x': list(self.queue_dt),
+                          'hm_y': self.bin_depth_list,
+                          'hm_z': mag_list,
+                          'min_z': self.min_z,
+                          'max_z': self.max_z,
+                          "bt_x": list(self.queue_bt_dt),
+                          "bt_y": list(self.queue_bt_range),
+                          "bottom_x": list(self.queue_bt_dt),
+                          "bottom_y": list(self.queue_bottom),
+                          "is_upward": self.is_upward_looking,
+                          "colorscale": 'Cividis'
+                      },
+                      namespace='/rti')
+
+            # Reset flag
+            #self.is_update = False
+
     def add_ens(self, ens):
         """
         Receive the data from the file.  It will process the file.
@@ -125,39 +158,6 @@ class HeatmapPlot:
 
         # Set flag to update the plot
         self.is_update = True
-
-    def update_plot(self, socketio):
-        """
-        Update the plot using the SocketIO.  The latest
-        information will be sent to the websocket and update
-        the plotly plot.  The data is passed using a JSON object.
-        :param socketio: SocketIO (websocket) connection.
-        """
-        # Convert the list of deque magnitudes to a list of magnitudes
-        mag_list = []
-        for mag_deque in self.list_mag:
-            mag_list.append(list(mag_deque))
-
-        #if self.is_update:
-        # Send the magnitude heatmap plot update
-        socketio.emit('update_heatmap_plot',
-                      {
-                          'hm_x': list(self.queue_dt),
-                          'hm_y': self.bin_depth_list,
-                          'hm_z': mag_list,
-                          'min_z': self.min_z,
-                          'max_z': self.max_z,
-                          "bt_x": list(self.queue_bt_dt),
-                          "bt_y": list(self.queue_bt_range),
-                          "bottom_x": list(self.queue_bt_dt),
-                          "bottom_y": list(self.queue_bottom),
-                          "is_upward": self.is_upward_looking,
-                          "colorscale": 'Cividis'
-                      },
-                      namespace='/rti')
-
-            # Reset flag
-            #self.is_update = False
 
     def plot_update_sqlite(self, sqlite_path):
         """
@@ -262,6 +262,7 @@ class HeatmapPlot:
             curr_min_z = min(x for x in mag_list if x is not None)
             if curr_min_z and curr_min_z < self.min_z:
                 self.min_z = curr_min_z
+
 
             curr_max_z = max(x for x in mag_list if x is not None)
             if curr_max_z and curr_max_z > self.max_z:

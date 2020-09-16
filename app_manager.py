@@ -13,6 +13,7 @@ import logging
 import serial
 import time
 import datetime
+from datetime import timedelta
 from collections import deque
 import re
 from plot_manager import PlotManager
@@ -50,7 +51,12 @@ class AppManager:
             "adcp_break": {},                                   # Results of a BREAK statement
             "adcp_ens_num": 0,                                  # Latest Ensemble number
             "selected_files": [],                               # Selected files to playback,
+        }
 
+        self.transect_state = {
+            "transect_dt_start": None,  # Start datetime of the transect
+            "transect_duration": None,  # Time duration of the transect
+            "voltage": 0.0,  # System Voltage
         }
 
         #self.is_volt_plot_init = False
@@ -240,19 +246,54 @@ class AppManager:
         """"
         Process the next incoming ensemble.
         """
+        heading = 0.0
+        pitch = 0.0
+        roll = 0.0
+        voltage = 0.0
+        water_temp = 0.0
+        transect_duration = ""
+        ens_time = ""
+        adcp_ens_num = 0
         if ens.IsEnsembleData:
-            print(str(ens.EnsembleData.EnsembleNumber))
+            #print(str(ens.EnsembleData.EnsembleNumber))
             self.app_state["adcp_ens_num"] = ens.EnsembleData.EnsembleNumber
+            adcp_ens_num = ens.EnsembleData.EnsembleNumber
 
-            # Pass the ASCII serial data to the websocket
-            self.socketio.emit('adcp_ens',
-                               {
-                                   'adcp_ens_num': self.app_state["adcp_ens_num"]
-                               },
-                               namespace='/rti')
+            if not self.transect_state["transect_dt_start"]:
+                self.transect_state["transect_dt_start"] = ens.EnsembleData.datetime()
 
-            # Update the plot manager
-            self.plot_mgr.add_ens(ens)
+            # Calculate the time between when transect started and now
+            self.transect_state["transect_duration"] = (ens.EnsembleData.datetime() - self.transect_state["transect_dt_start"]).total_seconds()
+            #duration = (ens.EnsembleData.datetime() - self.app_state["transect_dt_start"]).total_seconds()
+            transect_duration = str(timedelta(seconds=self.transect_state["transect_duration"]))
+
+            ens_time = str(ens.EnsembleData.datetime().strftime("%H:%M:%S"))
+
+        if ens.IsAncillaryData:
+            heading = round(ens.AncillaryData.Heading, 1)
+            pitch = round(ens.AncillaryData.Pitch, 1)
+            roll = round(ens.AncillaryData.Roll, 1)
+            water_temp = round(ens.AncillaryData.WaterTemp, 1)
+
+        if ens.IsSystemSetup:
+            voltage = round(ens.SystemSetup.Voltage, 1)
+
+        # Pass the ASCII serial data to the websocket
+        self.socketio.emit('adcp_ens',
+                           {
+                               'adcp_ens_num': adcp_ens_num,
+                               'ens_time': ens_time,
+                               'transect_duration': transect_duration,
+                               'voltage': voltage,
+                               'heading': heading,
+                               'pitch': pitch,
+                               'roll': roll,
+                               'water_temp': water_temp,
+                           },
+                           namespace='/rti')
+
+        # Update the plot manager
+        self.plot_mgr.add_ens(ens)
 
     def serial_thread_worker(self):
         """
