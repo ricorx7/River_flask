@@ -13,11 +13,17 @@ import logging
 import serial
 import time
 import datetime
+import os
 from datetime import timedelta
 from collections import deque
 import re
 from plot_manager import PlotManager
-
+from rti_python.River.RiverProjectManager import RiverProjectManager, RiverProjectMeta
+from rti_python.Writer.rti_sqlite_projects import RtiSqliteProjects
+from rti_python.River.Transect import Transect
+from rti_python.Utilities.config import RtiConfig
+from rti_python.Ensemble.Ensemble import Ensemble
+from rti_python.Writer.rti_binary import RtiBinaryWriter
 
 class AppManager:
 
@@ -25,8 +31,15 @@ class AppManager:
         self.plot = self.create_plot()
         self.socketio = socketio
 
+        # RTI Configuration
+        self.rti_config = RtiConfig(file_path="config.ini")
+        self.rti_config.init_river_project_config()
+
         # Plot manager to keep track of plots
         self.plot_mgr = PlotManager(app_mgr=self, socketio=socketio)
+
+        # River Project Manager to keep track of River projects
+        self.river_prj_mrg = RiverProjectManager(self.rti_config)
 
         # ADCP Codec to decode the ADCP data
         self.adcp_codec = AdcpCodec()
@@ -51,13 +64,24 @@ class AppManager:
             "adcp_break": {},                                   # Results of a BREAK statement
             "adcp_ens_num": 0,                                  # Latest Ensemble number
             "selected_files": [],                               # Selected files to playback,
+            "prj_name": "",                                     # Current project name
+            "prj_path": "",                                     # Current project folder path
         }
 
         self.transect_state = {
+            "transect_index": 1,        # Current index for the transect
             "transect_dt_start": None,  # Start datetime of the transect
             "transect_duration": None,  # Time duration of the transect
-            "voltage": 0.0,  # System Voltage
+            "voltage": 0.0,             # System Voltage
         }
+
+        # Current Transect
+        self.db_file = None                         # DB file to store the ensembles and transects
+        self.raw_file = None                        # Raw binary file to the store the ensemble data
+        self.is_record_raw_data = self.rti_config.config['RIVER']['auto_save_raw']     # Automatically save on startup
+        self.curr_ens_index = 0                     # Index the project DB for the latest ensemble
+        self.transect_index = 0                     # Transect Index
+        self.transect = None                        # Current transect
 
         #self.is_volt_plot_init = False
         #self.voltage_queue = deque(maxlen=100)
@@ -91,6 +115,97 @@ class AppManager:
         Clear all the plots.
         """
         self.plot_mgr.clear_plots()
+
+    def create_river_project(self):
+        """
+        Create a river project file if it does not exist.
+        This will keep all the ensemble and transect information.
+        Also create a raw data file to store all the incoming serial data.
+        """
+        if not self.db_file:
+            curr_datetime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            #prj_file = self.river_prj_mrg.create_project(curr_datetime)
+            #self.app_state["prj_name"] = curr_datetime
+            #self.app_state["prj_path"] = prj_file.file_path
+
+            db_file_path = os.path.join(self.rti_config.config['RIVER']['output_dir'], curr_datetime + ".db")
+            self.db_file = RtiSqliteProjects(db_file_path)
+            self.db_file.create_tables()
+
+            self.raw_file = RtiBinaryWriter(folder_path=self.rti_config.config['RIVER']['output_dir'])
+
+    def create_transect(self):
+        # Create a transect
+        if not self.transect:
+            self.transect = Transect(self.transect_next_index)
+
+        # Ensure the project is created
+        self.create_river_project(self)
+
+        # Start recording a transect file
+        if self.raw_file:
+            self.raw_file.close()
+
+        file_transect_header = "Transect_" + str(self.transect_index)
+        self.raw_file = RtiBinaryWriter(folder_path=self.rti_config.config['RIVER']['output_dir'], header=file_transect_header)
+
+    def update_site_info(self, site_info):
+        """
+        Update the site information for the transect.
+        """
+        # Create the transect if it is not created
+        self.create_transect()
+
+        # Set the values
+        self.transect.site_name = site_info["site_name"]
+        self.transect.station_number = site_info["station_number"]
+        self.transect.location = site_info["location"]
+        self.transect.party = site_info["party"]
+        self.transect.boat = site_info["boat"]
+        self.transect.measurement_num = site_info["measurement_num"]
+        self.transect.comments = site_info["comments"]
+
+        # Write the data to the transect
+        self.db_file.update_transect(self.transect)
+
+    def start_transect(self):
+        """
+        Start the transect.  Take all the information from the transect settings
+        and write it to the db file.
+        """
+        # Create the project db file if it does not exist
+        self.create_river_project()
+
+        # Create a transect
+        if not self.transect:
+            self.transect = Transect(self.transect_next_index)
+
+        # Set the start datetime
+        self.transect.start_datetime = datetime.datetime.now()
+
+        # Set the first ensemble for the transect
+        self.transect.start_ens_index = self.curr_ens_index
+
+    def stop_transect(self):
+        """
+        Stop the transect.  Set the last ensemble in the transect.
+        Make the discharge calculation.
+        Record the transect information to the DB file.
+        """
+        # Create the project db file if it does not exist
+        self.create_river_project()
+
+        # Set the stop datetime
+        self.transect.stop_datetime = datetime.datetime.now()
+
+        # Set the last ensemble for the transect
+        self.transect.last_ens_index = self.curr_ens_index
+
+        # Add the transect to the db file
+        self.db_file.add_transect(self.transect)
+
+        # Increment the transect index for the next transect
+        self.transect_index = self.transect_next_index + 1
 
     def socketio_background_thread(self):
         """
@@ -295,6 +410,9 @@ class AppManager:
         # Update the plot manager
         self.plot_mgr.add_ens(ens)
 
+        # Record the ensembles
+        self.record_ens(ens)
+
     def serial_thread_worker(self):
         """
         Thread worker to handle reading the serial port.
@@ -304,10 +422,13 @@ class AppManager:
         while self.serial_thread_alive:
             try:
                 if self.serial_port.raw_serial.in_waiting:
-                    # Read the data from the serial port
-                    self.serial_raw_bytes = self.serial_port.read(self.serial_port.raw_serial.in_waiting)
-
                     try:
+                        # Read the data from the serial port
+                        self.serial_raw_bytes = self.serial_port.read(self.serial_port.raw_serial.in_waiting)
+
+                        # Record the data
+                        self.record_raw_data(self.serial_raw_bytes)
+
                         # Convert to ASCII
                         # Ignore any non-ASCII characters
                         raw_serial_ascii = self.serial_raw_bytes.decode('ascii', 'ignore')
@@ -334,20 +455,13 @@ class AppManager:
                                 remove_buff_size = ascii_buff_size - self.app_state["max_ascii_buff"]
                                 self.app_state["serial_raw_ascii"] = self.app_state["serial_raw_ascii"][remove_buff_size:]
 
+                        # Pass data to codec to decode ADCP data
+                        self.adcp_codec.add(self.serial_raw_bytes)
 
                     except Exception as ex:
                         # Do nothing
                         # This is to prevent from seeing binary data on screen
                         logging.info("Error Reading serial data" + str(ex))
-
-
-                    # Record data if turned on
-                    #vm.record_data(data)
-
-                    # Record the raw data if turned on
-
-                    # Pass data to codec to decode ADCP data
-                    self.adcp_codec.add(self.serial_raw_bytes)
 
                 # Put a small sleep to allow more data to go into the buffer
                 time.sleep(0.01)
@@ -358,3 +472,33 @@ class AppManager:
             except Exception as ex:
                 logging.error("Error processing the data.\n" + str(ex))
                 self.disconnect_serial()
+
+    def record_raw_data(self, serial_bytes):
+        """
+        Write the raw data from the serial port to
+        a binary file.  This will write any data.
+        :param serial_bytes: Serial bytes array
+        """
+        if self.is_record_raw_data:
+            # Ensure the file is created
+            self.create_river_project()
+
+            # If the file is created, write the data
+            if self.raw_file:
+                self.raw_file.write(serial_bytes)
+
+    def record_ens(self, ens: Ensemble):
+        """
+        Record the ensemble to the db file.
+        Record the raw data to a raw binary file.
+        :param ens: Ensemble data.
+        """
+        # Create the project db file if it does not exist
+        self.create_river_project()
+
+        # Write the ensemble to the db file
+        if self.db_file:
+            # Set the latest index of the ensemble in the db file
+            # Set the burst number to the transect number
+            # Set the is_batch_write to false.  We are not writing in bulk
+            self.curr_ens_index = self.db_file.add_ensemble(ens, burst_num=self.transect_index, is_batch_write=False)

@@ -9,3 +9,4 @@ dash
 mttkinter
 psycopg2
 pandas
+h5py

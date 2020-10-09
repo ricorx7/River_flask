@@ -60,6 +60,11 @@ def main_page():
     return render_template('home.html', plot=bar, state=app_mgr.app_state)
 
 
+@app.route('/setup')
+def view_setup():
+    return render_template('setup.html', state=app_mgr.app_state)
+
+
 @app.route('/plot')
 def display_plot():
     bar = app_mgr.get_plot()
@@ -172,6 +177,39 @@ def playback_files():
 
     # Return good status
     return jsonify({'files': playback_files_selected})
+
+
+@app.route('/setup_site_info', methods=['POST'])
+def setup_save_site_info():
+    logging.debug("Save Setup Site Info")
+    logging.debug(request.form)
+
+    # Verify data is given
+    if "site_name" and "station_number" and "location" and "party" and "boat" and "measurement_num" and "comments" in request.form:
+        # Get the command
+        site_info = {
+            'site_name': request.form["site_name"],
+            'station_number': request.form["station_number"],
+            'location': request.form["location"],
+            'party': request.form["party"],
+            'boat': request.form["boat"],
+            'measurement_num': request.form["measurement_num"],
+            'comments': request.form["comments"],
+        }
+
+        # Create a project and pass the site info
+        app_mgr.create_river_project(site_info)
+
+        result = {
+            'is_setup_site_info_save_error': True,
+            'setup_site_info_error_status': ['No Project Selected']
+        }
+
+        # Return good status
+        return jsonify(result)
+
+    # Return error, missing command
+    return jsonify({'error': "Missing parameters to connect"})
 
 
 @socketio.on('connect', namespace='/rti')

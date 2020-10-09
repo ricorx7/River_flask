@@ -1,0 +1,56 @@
+<!-- Modal -->
+<div class="modal fade" id="modalSetupSiteInfo" tabindex="-1" role="dialog" aria-labelledby="modalSetupSiteInfoLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Site Information</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+              <label for="modalSetupSiteInfoSiteName">Site Name</label>
+              <i class="fas fa-info-circle" style="color:gray" data-toggle="tooltip" data-placement="right" title="The unique name of the river or site."></i>
+              <input type="text" class="form-control" id="modalSetupSiteInfoSiteName" placeholder="Mississippi River">
+            </div>
+            <div class="form-group">
+                <label for="modalSetupSiteInfoStationNumber">Station Number</label>
+                <i class="fas fa-info-circle" style="color:gray" data-toggle="tooltip" data-placement="right" title="The station number or unique identifier of this location along the river."></i>
+                <input type="text" class="form-control" id="modalSetupSiteInfoStationNumber" placeholder="53">
+            </div>
+            <div class="form-group">
+                <label for="modalSetupSiteInfoLocation">Location</label>
+                <i class="fas fa-info-circle" style="color:gray" data-toggle="tooltip" data-placement="right" title="The location on the river the measurement is taken."></i>
+                <input type="text" class="form-control" id="modalSetupSiteInfoLocation" placeholder="Bridge 22">
+            </div>
+            <div class="form-group">
+                <label for="modalSetupSiteInfoParty">Party</label>
+                <i class="fas fa-info-circle" style="color:gray" data-toggle="tooltip" data-placement="right" title="Comment on the people who made the measurement."></i>
+                <input type="text" class="form-control" id="modalSetupSiteInfoParty" placeholder="Employee Jon Doe">
+            </div>
+            <div class="form-group">
+                <label for="modalSetupSiteInfoBoat">Boat/Motor</label>
+                <i class="fas fa-info-circle" style="color:gray" data-toggle="tooltip" data-placement="right" title="State the type of vessel used to carry the ADCP across the river."></i>
+                <input type="text" class="form-control" id="modalSetupSiteInfoBoat" placeholder="Trimaran">
+            </div>
+            <div class="form-group">
+                <label for="modalSetupSiteInfoMeasurementNum">Measurement Number</label>
+                <i class="fas fa-info-circle" style="color:gray" data-toggle="tooltip" data-placement="right" title="If you plan to make multiple measurements in the same location, use this number to state which measurement you are currently working on."></i>
+                <input type="text" class="form-control" id="modalSetupSiteInfoMeasurementNum" placeholder="1">
+            </div>
+            <div class="form-group">
+                <label for="modalSetupSiteInfoComments">Comments</label>
+                <i class="fas fa-info-circle" style="color:gray" data-toggle="tooltip" data-placement="right" title="Any comments about the site."></i>
+                <textarea class="form-control" id="modalSetupSiteInfoComments" rows="3"></textarea>
+            </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button id="modalSetupSiteInfoBtnSave" type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>

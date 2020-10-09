@@ -1,6 +1,5 @@
 $(document).ready(function()
 {
-
     /**
      * Handle the Serial port SCAN button.
      * This will reset the serial port list

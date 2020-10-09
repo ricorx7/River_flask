@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% include 'modal_setup_site_info.html' %}
+
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-md-3">
+        <nav id="navbar-setup-menu" class="navbar navbar-light bg-light" style="position: fixed; top: 100px; font-size: 0.85rem;">
+          <nav class="nav nav-pills flex-column">
+            <a class="nav-link" href="#list-item-1">Step 1: Site Information</a>
+            <a class="nav-link" href="#list-item-2">Step 2: System Configuration</a>
+            <a class="nav-link" href="#list-item-3">Step 3: System Settings</a>
+            <a class="nav-link" href="#list-item-4">Step 4: Discharge Measurement</a>
+            <a class="nav-link" href="#list-item-5">Step 5: Recorder</a>
+            <a class="nav-link" href="#list-item-6">Step 6: Utilities</a>
+            <!--nav class="nav nav-pills flex-column">
+              <a class="nav-link ml-3 my-1" href="#list-item-7">Measurement Units</a>
+              <a class="nav-link ml-3 my-1" href="#list-item-8">Set Time</a>
+              <a class="nav-link ml-3 my-1" href="#list-item-9">System Test</a>
+              <a class="nav-link ml-3 my-1" href="#list-item-10">Hardware Setup</a>
+              <a class="nav-link ml-3 my-1" href="#list-item-11">Compass Calibration</a>
+              <a class="nav-link ml-3 my-1" href="#list-item-12">Composite Track</a>
+              <a class="nav-link ml-3 my-1" href="#list-item-13">Edge Settings</a>
+              <a class="nav-link ml-3 my-1" href="#list-item-14">Profile Extrapolation Settings</a>
+            </nav-->
+            <button class="btn btn-success">Start Measurement [F5]</button>
+          </nav>
+        </nav>
+      </div>
+      <div class="col-md-9 col-md-offset-3">
+        <div data-spy="scroll" data-target="#navbar-setup-menu" data-offset="0" style="position: relative; overflow-y: scroll;">
+          <div class="card rti-setup-card" id="list-item-1">
+            <div class="card-header text-white bg-secondary">
+              Step 1: Site Information
+            </div>
+            <div class="card-body">
+              <div class="row">
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <p>Enter information to better describe the site and measurement conditions.</p>
+                  <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSetupSiteInfo">Change Settings</button>
+                </div>
+                <div class="col-md-6">
+                  <div class="table-responsive-sm">
+                    <table class="table table-sm table-striped">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Site Name</th>
+                      <td>The River</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Station Number</th>
+                      <td>M555</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Location</th>
+                      <td>Center</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Party</th>
+                      <td>Me and Bob</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Boat/Motor</th>
+                      <td>Trimaran</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Measurement Number</th>
+                      <td>M53</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Comments</th>
+                      <td>Its hot.</td>
+                    </tr>
+                  </tbody>
+                </table>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+          <div class="card rti-setup-card" id="list-item-2">
+            <div class="card-header text-white bg-secondary">
+              Step 2: ADCP System
+            </div>
+            <div class="card-body">
+              <div class="row">
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <p>ADCP serial number, configuration and firmware version.</p>
+                  <a href="#" class="btn btn-info btn-sm">Change Settings</a>
+                </div>
+                <div class="col-md-6">
+                  <div class="table-responsive-sm">
+                    <table class="table table-sm table-striped">
+                  <tbody>
+                    <tr>
+                      <th scope="row">ADCP Type</th>
+                      <td>RiverQ 1200khz</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Serial Number</th>
+                      <td>888</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Firmware Version</th>
+                      <td>0.2.143</td>
+                    </tr>
+                  </tbody>
+                </table>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+          <div class="card rti-setup-card" id="list-item-3">
+            <div class="card-header text-white bg-secondary">
+              Step 3: System Settings
+            </div>
+            <div class="card-body">
+              <div class="row">
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <p>Modify system settings.</p>
+                  <a href="#" class="btn btn-info btn-sm">Change Settings</a>
+                </div>
+                <div class="col-md-6">
+                  <div class="table-responsive-sm">
+                    <table class="table table-sm table-striped">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Transducer Depth (m)</th>
+                      <td>0.7</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Screening Distance (m)</th>
+                      <td>0.0</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Salinity (ppt)</th>
+                      <td>0.0</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Magnetic Declination (deg)</th>
+                      <td>13.2</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Compass Heading Offset (deg)</th>
+                      <td>13.2</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">GPS Antenna X Offset</th>
+                      <td>0.0</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">GPS Antenna Y Offset</th>
+                      <td>0.0</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Track Reference</th>
+                      <td>Bottom Track</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Depth Reference</th>
+                      <td>Vertical Beam</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Coordinate System</th>
+                      <td>ENU</td>
+                    </tr>
+                  </tbody>
+                </table>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+          <div class="card rti-setup-card" id="list-item-4">
+            <div class="card-header text-white bg-secondary">
+              Step 4: Discharge Measurement
+            </div>
+            <div class="card-body">
+              <div class="row">
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <p>Measurement settings.</p>
+                  <a href="#" class="btn btn-info btn-sm">Change Settings</a>
+                </div>
+                <div class="col-md-6">
+                  <div class="table-responsive-sm">
+                    <table class="table table-sm table-striped">
+                  <tbody>
+                    <tr>
+                      <th scope="row">Start Edge</th>
+                      <td>Left Bank</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Rated Discharge (m3/s)</th>
+                      <td>0.0</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Measurement Quality</th>
+                      <td>Poor</td>
+                    </tr>
+                  </tbody>
+                </table>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+          <div class="card rti-setup-card" id="list-item-5">
+            <div class="card-header text-white bg-secondary">
+              Step 5: Recorder
+            </div>
+            <div class="card-body">
+              <div class="row">
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <p>Total Space: 7.63 GB Free Space 7.55 GB (99% Free)</p>
+                  <div class="btn-group-vertical">
+                    <a href="#" class="btn btn-info btn-sm">Download All Files</a>
+                    <a href="#" class="btn btn-info btn-sm">Download Selected Files</a>
+                    <a href="#" class="btn btn-danger btn-sm">Format Recorder</a>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="table-responsive-sm">
+                    <table class="table table-sm table-striped">
+                      <thead>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Size</th>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><input type="checkbox"></td>
+                          <td scope="row">File_1.ens</td>
+                          <td>2020/10/20 13:18:22</td>
+                          <td>6.25 MB</td>
+                        </tr>
+                        <tr>
+                          <td><input type="checkbox"></td>
+                          <td scope="row">File_2.ens</td>
+                          <td>2020/10/20 13:19:22</td>
+                          <td>7.25 MB</td>
+                        </tr>
+                        <tr>
+                          <td><input type="checkbox"></td>
+                          <td scope="row">File_3.ens</td>
+                          <td>2020/10/20 03:18:22</td>
+                          <td>16.25 MB</td>
+                        </tr>
+                        <tr>
+                          <td><input type="checkbox"></td>
+                          <td scope="row">File_4.ens</td>
+                          <td>2020/10/22 11:18:22</td>
+                          <td>26.25 MB</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+          <div class="card rti-setup-card" id="list-item-6">
+            <div class="card-header text-white bg-secondary">
+              Step 6: Utilities
+            </div>
+            <div class="card-body">
+              <div class="card rti-setup-card" id="list-item-7">
+              <div class="card-header">
+                Set Units
+              </div>
+              <div class="card-body">
+                <div class="row">
+                </div>
+                <div class="row">
+                  <div class="col-md-4">
+                    <p>Set the units.  Imperial or Metric</p>
+                    <a href="#" class="btn btn-info btn-sm">Set Time</a>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="table-responsive-sm">
+                      <table class="table table-sm table-striped">
+                        <tbody>
+                          <tr>
+                            <th scope="row">Units</th>
+                            <td>Metric</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+              <div class="card rti-setup-card" id="list-item-8">
+              <div class="card-header">
+                <i class="fas fa-check-circle" style="color:green"></i>
+                Set Time
+              </div>
+              <div class="card-body">
+                <div class="row">
+                </div>
+                <div class="row">
+                  <div class="col-md-4">
+                    <p>Set the Time to PC Time</p>
+                    <a href="#" class="btn btn-info btn-sm">Set Time</a>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="table-responsive-sm">
+                      <table class="table table-sm table-striped">
+                        <tbody>
+                          <tr>
+                            <th scope="row">Previous Set Time</th>
+                            <td>2020/09/22 13:12:11</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+              <div class="card rti-setup-card" id="list-item-9">
+              <div class="card-header">
+                <i class="fas fa-check-circle" style="color:green"></i>
+                System Test
+              </div>
+              <div class="card-body">
+                <div class="row">
+                </div>
+                <div class="row">
+                  <div class="col-md-4">
+                    <p>Test the system for any issues.</p>
+                    <a href="#" class="btn btn-info btn-sm">Run Test</a>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="table-responsive-sm">
+                      <table class="table table-sm table-striped">
+                        <tbody>
+                          <tr>
+                            <th scope="row">System Test Time</th>
+                            <td>2020/09/22 13:12:11</td>
+                          </tr>
+                          <tr>
+                            <th scope="row">System Test</th>
+                            <td>PASS</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+              <div class="card rti-setup-card" id="list-item-10">
+                <div class="card-header">
+                  Hardware Setup
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <p>Setup GPS and Boat</p>
+                      <a href="#" class="btn btn-info btn-sm">Heading Source</a>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="table-responsive-sm">
+                        <table class="table table-sm table-striped">
+                          <tbody>
+                            <tr>
+                              <th scope="row">Heading Source</th>
+                              <td>ADCP Compass Heading</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">GPS Connected</th>
+                              <td>Yes</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Measurement Method</th>
+                              <td>LC and Moving Boat</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card rti-setup-card" id="list-item-11">
+                <div class="card-header">
+                  <i class="fas fa-check-circle" style="color:green"></i>
+                  Compass Calibration
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <p>Compass calibration results</p>
+                      <a href="#" class="btn btn-info btn-sm">Compass Calibration</a>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="table-responsive-sm">
+                        <table class="table table-sm table-striped">
+                          <tbody>
+                            <tr>
+                              <th scope="row">Compass Calibration Time/th>
+                              <td>2020/09/22 13:11:22</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Result</th>
+                              <td>PASS</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Score</th>
+                              <td>Excellent</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Magentic Interference</th>
+                              <td>Low</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Calibration Score</th>
+                              <td>2002</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card rti-setup-card" id="list-item-12">
+                <div class="card-header">
+                  Composite Tracks
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <p>Setup Composite Track.</p>
+                      <a href="#" class="btn btn-info btn-sm">Set Track</a>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="table-responsive-sm">
+                        <table class="table table-sm table-striped">
+                          <tbody>
+                            <tr>
+                              <th scope="row">Composite Track</th>
+                              <td>Enabled</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card rti-setup-card" id="list-item-13">
+                <div class="card-header">
+                  Edge Settings
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <p>Setup Edge settings.</p>
+                      <a href="#" class="btn btn-info btn-sm">Set Edge Settings.</a>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="table-responsive-sm">
+                        <table class="table table-sm table-striped">
+                          <tbody>
+                            <tr>
+                              <th scope="row">Left Distance (m)</th>
+                              <td>5.0</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Left Method</th>
+                              <td>Sloped Bank</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Right Distance (m)</th>
+                              <td>6.0</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Right Method</th>
+                              <td>Sloped Bank</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Start Edge</th>
+                              <td>Left Bank</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Auto-Edge Profiles</th>
+                              <td>10</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Show Edge Dialog</th>
+                              <td>Disabled</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card rti-setup-card" id="list-item-14">
+                <div class="card-header">
+                  Profile Extrapolation Settings
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <p>Extrapolation of Q values.</p>
+                      <a href="#" class="btn btn-info btn-sm">Set Settings</a>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="table-responsive-sm">
+                        <table class="table table-sm table-striped">
+                          <tbody>
+                            <tr>
+                              <th scope="row">Top Fit Type</th>
+                              <td>Three Point Slope</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Top Use Cells</th>
+                              <td>Entire Profile</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Bottom Fit Type</th>
+                              <td>No Slope</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Bottom Use Cells</th>
+                              <td>20%</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}

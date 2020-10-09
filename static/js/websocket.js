@@ -25,6 +25,7 @@ $(document).ready(function()
         init_shiptrack_mapbox_plot();
         //init_shiptrack_geo_plot();
         init_depth_plot();
+        init_amp_plot();
     });
 
     // Event handler for new connections.
@@ -87,6 +88,7 @@ $(document).ready(function()
         init_shiptrack_mapbox_plot();
         //init_shiptrack_geo_plot();
         init_depth_plot();
+        init_amp_plot();
     });
 
     /**
@@ -95,6 +97,20 @@ $(document).ready(function()
     socket.on('update_volt_plot', function (msg) {
         // Function defined in volt_plot.js
         update_volt_plot( msg.x, msg.y );
+    });
+
+    /**
+     * Update the amplitude plot with the latest data.
+     */
+    socket.on('update_amp_plot', function (msg) {
+        // Function defined in amp_plot.js
+        update_amp_plot( msg.beam0,
+                         msg.beam1,
+                         msg.beam2,
+                         msg.beam3,
+                         msg.beamVert,
+                         msg.binDepth,
+                         msg.is_upward);
     });
 
     /**
