@@ -8,12 +8,14 @@ import json
 from rti_python.Comm.adcp_serial_port import AdcpSerialPort
 import rti_python.Comm.adcp_serial_port as serial_port
 from rti_python.Codecs.AdcpCodec import AdcpCodec
+from rti_python.Writer.rti_sqlite_projects import RtiSqliteProjects
 import threading
 import logging
 import serial
 import time
 import datetime
 import os
+import pathlib
 from datetime import timedelta
 from collections import deque
 import re
@@ -64,6 +66,7 @@ class AppManager:
             "adcp_break": {},                                   # Results of a BREAK statement
             "adcp_ens_num": 0,                                  # Latest Ensemble number
             "selected_files": [],                               # Selected files to playback,
+            "selected_project_db": None,                           # Selected Project,
             "prj_name": "",                                     # Current project name
             "prj_path": "",                                     # Current project folder path
         }
@@ -335,9 +338,33 @@ class AppManager:
 
         # Plot all the plots
         if len(self.app_state["selected_files"]) >= 1:
-            self.plot_mgr.playback_sqlite(self.app_state["selected_files"][0])
 
-        return self.app_state["selected_files"]
+            # Get the directory of the first file selected
+            file_dir = os.path.dirname(self.app_state["selected_files"][0])
+            file_name_no_ext = pathlib.Path(self.app_state["selected_files"][0]).stem
+            file_ext = pathlib.Path(self.app_state["selected_files"][0]).suffix
+
+            # Check if it is a raw file or DB file
+            if file_ext == '.bin' or file_ext == '.ens' or file_ext == '.rtb' or file_ext == '.BIN' or file_ext == '.ENS' or file_ext == '.RTB':
+                # Create a project DB file
+                project_path = os.path.join(file_dir, file_name_no_ext + RtiSqliteProjects.FILE_EXT)
+                playback_project = RtiSqliteProjects(project_path)
+
+                # Load the files to the project
+                playback_project.load_files(self.app_state['selected_files'])
+
+                # Reset what the selected project is
+                self.app_state['selected_project_db'] = project_path
+
+            # Check if the file is a RDB file
+            elif file_ext == '.rdb' or file_ext == '.RDB' or file_ext == RtiSqliteProjects.FILE_EXT:
+                self.app_state["selected_project_db"] = self.app_state["selected_files"][0]
+
+            # Load plot the DB data
+            if self.app_state["selected_project_db"]:
+                self.plot_mgr.playback_sqlite(self.app_state["selected_project_db"])
+
+        return self.app_state["selected_project_db"]
 
     def select_files_playback(self):
         """

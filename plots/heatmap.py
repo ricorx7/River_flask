@@ -172,67 +172,70 @@ class HeatmapPlot:
 
         sql.close()
 
-        # Get the list of all the average ranges
-        avg_range_list = df_bt_range['avgRange'].tolist()
-        bt_dt_list = df_bt_range['datetime'].tolist()
+        # Verify we found data
+        if not df_bt_range.empty and not df_mag.empty:
 
-        # Find all the unique datetime to separate the ensembles
-        # Then add them to the queue
-        unique_dt = df_mag.datetime.unique()
-        self.queue_dt.extend(unique_dt)
+            # Get the list of all the average ranges
+            avg_range_list = df_bt_range['avgRange'].tolist()
+            bt_dt_list = df_bt_range['datetime'].tolist()
 
-        # Set the depth list
-        # Get the first dt to get all the bins associated with a specific datetime (ensemble)
-        first_dt = unique_dt.flat[0]
-        first_ens = df_mag.loc[df_mag['datetime'] == first_dt]
-        self.is_upward_looking = bool(first_ens['isUpwardLooking'].iloc[0])
-        self.bin_size = first_ens['bin_size'].iloc[0]
-        self.blank = first_ens['blank'].iloc[0]
+            # Find all the unique datetime to separate the ensembles
+            # Then add them to the queue
+            unique_dt = df_mag.datetime.unique()
+            self.queue_dt.extend(unique_dt)
 
-        # Get all the unique bin numbers
-        # Sort them to be in order
-        unique_bin_num = df_mag.bin_num.unique()
-        unique_bin_num.sort()
+            # Set the depth list
+            # Get the first dt to get all the bins associated with a specific datetime (ensemble)
+            first_dt = unique_dt.flat[0]
+            first_ens = df_mag.loc[df_mag['datetime'] == first_dt]
+            self.is_upward_looking = bool(first_ens['isUpwardLooking'].iloc[0])
+            self.bin_size = first_ens['bin_size'].iloc[0]
+            self.blank = first_ens['blank'].iloc[0]
 
-        for bin_num in unique_bin_num:
-            bin_depth = self.blank + (self.bin_size * bin_num)
+            # Get all the unique bin numbers
+            # Sort them to be in order
+            unique_bin_num = df_mag.bin_num.unique()
+            unique_bin_num.sort()
 
-            # Add the bins depths to the list
-            self.bin_depth_list.append(bin_depth)
+            for bin_num in unique_bin_num:
+                bin_depth = self.blank + (self.bin_size * bin_num)
 
-            # Get all the values for each bin
-            bin_mags = df_mag.loc[df_mag['bin_num'] == bin_num]
+                # Add the bins depths to the list
+                self.bin_depth_list.append(bin_depth)
 
-            #if self.mark_bad_below_bottom and df_bt_range:
+                # Get all the values for each bin
+                bin_mags = df_mag.loc[df_mag['bin_num'] == bin_num]
+
+                #if self.mark_bad_below_bottom and df_bt_range:
 
 
-            # Remove any bad velocity data
-            # Bad velocity is greater than 88.88
-            # Convert to numpy array first then replace bad velocity values with None
-            bin_mags_np = np.array(bin_mags['mag'].tolist())
-            bin_mags_list = np.where(bin_mags_np >= self.bad_velocity, None, bin_mags_np).tolist()
+                # Remove any bad velocity data
+                # Bad velocity is greater than 88.88
+                # Convert to numpy array first then replace bad velocity values with None
+                bin_mags_np = np.array(bin_mags['mag'].tolist())
+                bin_mags_list = np.where(bin_mags_np >= self.bad_velocity, None, bin_mags_np).tolist()
 
-            # Add a deque to the list for each bin
-            self.list_mag.append(deque(maxlen=self.max_display_points))
+                # Add a deque to the list for each bin
+                self.list_mag.append(deque(maxlen=self.max_display_points))
 
-            # Set all the magnitude values to the list
-            self.list_mag[bin_num].extend(bin_mags_list)
+                # Set all the magnitude values to the list
+                self.list_mag[bin_num].extend(bin_mags_list)
 
-            # Check for the min and max magnitude value
-            self.check_min_max_z(bin_mags_list)
+                # Check for the min and max magnitude value
+                self.check_min_max_z(bin_mags_list)
 
-        # Get all the range values for the bottom track line
-        self.queue_bt_range.extend(avg_range_list)
+            # Get all the range values for the bottom track line
+            self.queue_bt_range.extend(avg_range_list)
 
-        # Get the datetime for the bottom track values
-        self.queue_bt_dt.extend(bt_dt_list)
+            # Get the datetime for the bottom track values
+            self.queue_bt_dt.extend(bt_dt_list)
 
-        # Create a line at the bottom of the plot to connect to the bottom track line
-        # Make the length of the list the same as the number of range values
-        self.queue_bottom.extend([max(self.bin_depth_list)]*len(df_bt_range['avgRange'].tolist()))
+            # Create a line at the bottom of the plot to connect to the bottom track line
+            # Make the length of the list the same as the number of range values
+            self.queue_bottom.extend([max(self.bin_depth_list)]*len(df_bt_range['avgRange'].tolist()))
 
-        # Set flag to update the plot
-        self.is_update = True
+            # Set flag to update the plot
+            self.is_update = True
 
     def clear(self):
         """

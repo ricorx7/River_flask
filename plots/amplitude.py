@@ -94,16 +94,16 @@ class AmplitudeLinePlot:
         Get the data from the sqlite DB file.  Then update the queues to update the plot.
         """
         # Create a connection to the sqlite file
-        sql = RtiSQL(conn=sqlite_path, is_sqlite=True)
+        #sql = RtiSQL(conn=sqlite_path, is_sqlite=True)
 
         # Get the voltage data from the sqlite file
-        df_volt = sql.get_voltage_data(1)
+        #df_volt = sql.get_voltage_data(1)
 
-        sql.close()
+        #sql.close()
 
         # Add the data to the queue so the next refresh will show all the data
-        self.voltage_dt_queue.extend(df_volt["datetime"])
-        self.voltage_queue.extend(df_volt["voltage"])
+        #self.voltage_dt_queue.extend(df_volt["datetime"])
+        #self.voltage_queue.extend(df_volt["voltage"])
 
         # Update the flag to plot
         self.is_update = True

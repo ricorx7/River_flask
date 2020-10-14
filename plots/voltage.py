@@ -74,12 +74,13 @@ class VoltageLinePlot:
 
         sql.close()
 
-        # Add the data to the queue so the next refresh will show all the data
-        self.voltage_dt_queue.extend(df_volt["datetime"])
-        self.voltage_queue.extend(df_volt["voltage"])
+        if not df_volt.empty and 'datetime' in df_volt and 'voltage' in df_volt:
+            # Add the data to the queue so the next refresh will show all the data
+            self.voltage_dt_queue.extend(df_volt["datetime"])
+            self.voltage_queue.extend(df_volt["voltage"])
 
-        # Update the flag to plot
-        self.is_update = True
+            # Update the flag to plot
+            self.is_update = True
 
     def clear(self):
         """
