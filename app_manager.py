@@ -376,7 +376,7 @@ class AppManager:
         root.overrideredirect(True)         # Used to Bring window to front and focused
         root.geometry('0x0+0+0')            # Used to Bring window to front and focused
         root.focus_force()                  # Used to Bring window to front and focused
-        filetypes = [("DB files", "*.db"), ("ENS Files", "*.ens"), ("BIN Files", "*.bin"), ('All Files', '*.*')]
+        filetypes = [("RDB files", "*.rdb"), ("ENS Files", "*.ens"), ("BIN Files", "*.bin"), ('All Files', '*.*')]
         file_paths = filedialog.askopenfilenames(parent=root, title="Select File to Playback", filetypes=filetypes)
         root.withdraw()
 
