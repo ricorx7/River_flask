@@ -351,7 +351,13 @@ class AppManager:
                 playback_project = RtiSqliteProjects(project_path)
 
                 # Load the files to the project
-                playback_project.load_files(self.app_state['selected_files'])
+                # Use a thread to load the data
+                read_file_thread = threading.Thread(target=self.load_raw_files, args=[project_path], name="Read Raw File Thread")
+
+                # Start the thread then wait for it to finish before moving on
+                read_file_thread.start()
+                read_file_thread.join()
+                #playback_project.load_files(self.app_state['selected_files'])
 
                 # Reset what the selected project is
                 self.app_state['selected_project_db'] = project_path
@@ -365,6 +371,17 @@ class AppManager:
                 self.plot_mgr.playback_sqlite(self.app_state["selected_project_db"])
 
         return self.app_state["selected_project_db"]
+
+    def load_raw_files(self, project_path):
+        """
+        Load the raw data to the project.
+        :param project_path: Path to the RDB file.
+        :return:
+        """
+        playback_project = RtiSqliteProjects(project_path)
+
+        # Load the files to the project
+        playback_project.load_files(self.app_state['selected_files'])
 
     def select_files_playback(self):
         """
