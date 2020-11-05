@@ -1,6 +1,14 @@
-DataloggR
+# RiverR
 
-Software to work with the RTI Datalogger
+Realtime River Transect data collection.  Using Python and Flask backend.  Frontend uses Javascript and websockets for communication with Python backend.
+
+![RiveR](http://rowetechinc.co/github_img/river.png)
+
+![River Settings](http://rowetechinc.co/github_img/river-settings.png)
+
+![River Map](http://rowetechinc.co/github_img/river-map.png)
+
+![River Terminal](http://rowetechinc.co/github_img/river-terminal.png)
 
 # Run Application
 Run the application by running app.py
