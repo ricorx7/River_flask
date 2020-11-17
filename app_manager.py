@@ -27,6 +27,7 @@ from rti_python.Utilities.config import RtiConfig
 from rti_python.Ensemble.Ensemble import Ensemble
 from rti_python.Writer.rti_binary import RtiBinaryWriter
 
+
 class AppManager:
 
     def __init__(self, socketio):
